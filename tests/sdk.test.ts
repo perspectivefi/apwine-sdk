@@ -31,7 +31,7 @@ describe('APWineSDK', () => {
     sdk = new APWineSDK({
       provider: alchemyProvider,
       signer,
-      network: 'mainnet'
+      network: 'kovan'
     })
   })
 
@@ -55,15 +55,5 @@ describe('APWineSDK', () => {
     expect(sdk.Controller).toBeUndefined()
     await delay(2000)
     expect(sdk.Controller).toBeDefined()
-  })
-
-  it('should should', async () => {
-    const vaults = await sdk.fetchAllFutureVaults()
-    const result = await sdk.withdraw(vaults[0], 1)
-
-    // console.log(result)
-
-    const pools = await sdk.fetchAllLPTokenPools()
-    console.log(pools)
   })
 })
