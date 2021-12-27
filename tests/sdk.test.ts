@@ -61,6 +61,9 @@ describe('APWineSDK', () => {
     const vaults = await sdk.fetchAllFutureVaults()
     const result = await sdk.withdraw(vaults[0], 1)
 
-    console.log(result)
+    // console.log(result)
+
+    const pools = await sdk.fetchAllLPTokenPools()
+    console.log(pools)
   })
 })

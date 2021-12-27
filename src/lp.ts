@@ -1,10 +1,10 @@
 import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'
 import { LPToken__factory } from '@apwine/amm'
-
-import { PairId, PAIR_IDS } from './constants'
 import { Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
+
+import { PairId, PAIR_IDS } from './constants'
 import { Network } from './constants'
 import { getAMMContract } from './contracts'
 

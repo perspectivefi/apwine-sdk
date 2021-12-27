@@ -17,8 +17,7 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why",
-    "hardhat": "hardhat --tsconfig ./tsconfig.hardhat.json"
+    "analyze": "size-limit --why"
   },
   "husky": {
     "hooks": {

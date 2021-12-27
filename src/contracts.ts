@@ -4,10 +4,11 @@ import {
   FutureVault__factory,
   Registry__factory
 } from '@apwine/protocol'
+import { AMM__factory } from '@apwine/amm'
 import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
+
 import { Network } from './constants'
-import { AMM__factory } from '@apwine/amm'
 import config from './config.json'
 
 export const getRegistryContract = (

@@ -1,4 +1,9 @@
 import { BigNumberish, Signer } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import { Network, PairId } from './constants'
+import { Controller, FutureVault, Registry } from '@apwine/protocol'
+import { AMM } from '@apwine/amm'
+
 import {
   deposit,
   fetchAllFutureVaults,
@@ -6,16 +11,12 @@ import {
   fetchFutureFromIndex,
   withdraw
 } from './futures'
-import { Provider } from '@ethersproject/providers'
-import { Network, PairId } from './constants'
-import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { fetchAllLPTokenPools, fetchLPTokenPool } from './lp'
 import {
   getAMMContract,
   getControllerContract,
   getRegistryContract
 } from './contracts'
-import { AMM } from '@apwine/amm'
 import { error } from './utils'
 
 type ConstructorProps = {

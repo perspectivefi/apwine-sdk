@@ -1,14 +1,15 @@
-import { getAddress } from './utils'
 import range from 'ramda/src/range'
-import { Network } from './constants'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, BigNumberish, Signer } from 'ethers'
+import { FutureVault, FutureVault__factory } from '@apwine/protocol'
+
+import { getAddress } from './utils'
+import { Network } from './constants'
 import {
   getControllerContract,
   getFutureVaultContract,
   getRegistryContract
 } from './contracts'
-import { FutureVault, FutureVault__factory } from '@apwine/protocol'
 
 export const fetchFutureFromIndex = async (
   network: Network,
