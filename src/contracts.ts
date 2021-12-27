@@ -1,4 +1,3 @@
-import range from 'ramda/src/range'
 import {
   Controller__factory,
   FutureVault__factory,
@@ -7,8 +6,8 @@ import {
 import { AMM__factory } from '@apwine/amm'
 import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
-
 import { Network } from './constants'
+
 import config from './config.json'
 
 export const getRegistryContract = (

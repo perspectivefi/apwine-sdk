@@ -1,23 +1,19 @@
 import path from 'path'
 import dotenv from 'dotenv'
 import { ethers, providers, Signer } from 'ethers'
-import APWineSDK from '../src/sdk'
-import { AlchemyProvider, Provider } from '@ethersproject/providers'
+import { AlchemyProvider } from '@ethersproject/providers'
 import { SigningKey } from 'ethers/lib/utils'
+import APWineSDK from '../src/sdk'
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms))
 
 describe('APWineSDK', () => {
-  let url: string,
-    provider: Provider,
-    alchemyProvider: AlchemyProvider,
-    signer: Signer,
-    sdk: APWineSDK
+  let alchemyProvider: AlchemyProvider, signer: Signer, sdk: APWineSDK
 
   beforeAll(() => {
     dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-    url = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`
+    // url = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`
     alchemyProvider = new providers.AlchemyProvider(
       'kovan',
       process.env.ALCHEMY_API_KEY

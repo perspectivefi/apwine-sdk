@@ -1,11 +1,11 @@
-import range from 'ramda/src/range'
-import xprod from 'ramda/src/xprod'
+
 import { LPToken__factory } from '@apwine/amm'
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
+import range from 'ramda/src/range'
+import xprod from 'ramda/src/xprod'
 
-import { PairId, PAIR_IDS } from './constants'
-import { Network } from './constants'
+import { Network, PAIR_IDS, PairId } from './constants'
 import { getAMMContract } from './contracts'
 
 export const getLPTokenContract = (

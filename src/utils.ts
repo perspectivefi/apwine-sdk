@@ -2,14 +2,13 @@ import { BytesLike } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
-
 import errors from './errors.json'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)
 
 function isInteger(value: number) {
-  return typeof value === 'number' && value == value && value % 1 === 0
+  return typeof value === 'number' && value % 1 === 0
 }
 
 export function isHexString(value: any, length?: number): boolean {
@@ -163,7 +162,7 @@ function ibanChecksum(address: string): string {
 
   // Javascript can handle integers safely up to 15 (decimal) digits
   while (expanded.length >= safeDigits) {
-    let block = expanded.substring(0, safeDigits)
+    const block = expanded.substring(0, safeDigits)
     expanded = (parseInt(block, 10) % 97) + expanded.substring(block.length)
   }
 

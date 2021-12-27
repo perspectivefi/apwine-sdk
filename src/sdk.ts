@@ -1,8 +1,8 @@
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { Network, PairId } from './constants'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM } from '@apwine/amm'
+import { Network, PairId } from './constants'
 
 import {
   deposit,

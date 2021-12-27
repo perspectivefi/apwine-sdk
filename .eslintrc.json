@@ -1,0 +1,26 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jest": true
+    },
+    "extends": [
+        "standard"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "eslint-plugin-import"
+    ],
+    "rules": {
+        "camelcase": "off",
+        "space-before-function-paren": "off",
+        "no-unused-vars": "warn",
+        "promise/param-names": "off",
+        "import/order": "error"
+    }
+}
