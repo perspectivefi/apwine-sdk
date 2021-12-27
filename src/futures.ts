@@ -106,7 +106,7 @@ export const withdraw = async (
 ) => {
   const controller = await getControllerContract(network, signerOrProvider)
 
-  return controller.deposit(future.address, amount)
+  return controller.withdraw(future.address, amount)
 }
 
 export const deposit = async (
