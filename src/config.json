@@ -1,0 +1,16 @@
+{
+  "networks": {
+    "kovan": {
+      "REGISTRY_ADDRESS": "0xD88d8f94Bb3157bC3819d31B636f495aA6d5De95",
+      "AMM_ADDRESS": "0xb9abc4a489De30523B0Ab48854ed7D95723e6d65"
+    },
+    "mainnet": {
+      "REGISTRY_ADDRESS": "0x00B85d5CE764ad650c745F90dD2C16ecBC1D99A1",
+      "AMM_ADDRESS": ""
+    },
+    "polygon": {
+      "REGISTRY_ADDRESS": "0x00B85d5CE764ad650c745F90dD2C16ecBC1D99A1",
+      "AMM_ADDRESS": ""
+    }
+  }
+}

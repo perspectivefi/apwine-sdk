@@ -1,0 +1,3 @@
+{
+    "NoSigner": "Please provide a signer either by calling sdk.updateSinger, or creating a new SDK instance with a signer"
+}
