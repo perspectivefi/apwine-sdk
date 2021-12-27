@@ -52,4 +52,9 @@ describe('APWineSDK', () => {
     await delay(2000)
     expect(sdk.Controller).toBeDefined()
   })
+
+  it('', async () => {
+    const aggr = await sdk.fetchPTTokens()
+    console.log(aggr)
+  })
 })

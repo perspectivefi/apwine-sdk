@@ -6,9 +6,10 @@ import { Network, PairId } from './constants'
 
 import {
   deposit,
+  fetchAllFutureAggregates,
   fetchAllFutureVaults,
-  fetchFutureFromAddress,
-  fetchFutureFromIndex,
+  fetchFutureAggregateFromIndex,
+  fetchFutureAggregateFromAddress,
   withdraw
 } from './futures'
 import { fetchAllLPTokenPools, fetchLPTokenPool } from './lp'
@@ -18,6 +19,8 @@ import {
   getRegistryContract
 } from './contracts'
 import { error } from './utils'
+import { fetchPTTokens } from './pt'
+import { fetchFYTTokens } from './fyt'
 
 type ConstructorProps = {
   network: Network
@@ -62,16 +65,28 @@ class APWineSDK {
     this.network = network
   }
 
-  async fetchFutureFromIndex(index: number) {
-    return fetchFutureFromIndex(this.network, this.provider, index)
+  async fetchFutureAggregateFromIndex(index: number) {
+    return fetchFutureAggregateFromIndex(this.network, this.provider, index)
   }
 
-  async fetchFutureFromAddress(futureAddress: string) {
-    fetchFutureFromAddress(this.network, this.provider, futureAddress)
+  async fetchFutureAggregateFromAddress(futureAddress: string) {
+    return fetchFutureAggregateFromAddress(this.network, this.provider, futureAddress)
+  }
+
+  async fetchAllFutureAggregates() {
+    return fetchAllFutureAggregates(this.network, this.provider)
   }
 
   async fetchAllFutureVaults() {
     return fetchAllFutureVaults(this.network, this.provider)
+  }
+
+  async fetchPTTokens() {
+    return fetchPTTokens(this.network, this.provider)
+  }
+
+  async fetchFYTTokens() {
+    return fetchFYTTokens(this.network, this.provider)
   }
 
   async fetchLPTokenPool(pairId: PairId, periodIndex?: number) {

@@ -3,6 +3,7 @@ import { FutureVault, FutureVault__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import {
+  getAMMContract,
   getControllerContract,
   getFutureVaultContract,
   getRegistryContract
@@ -10,7 +11,7 @@ import {
 import { Network } from './constants'
 import { getAddress } from './utils'
 
-export const fetchFutureFromIndex = async (
+export const fetchFutureAggregateFromIndex = async (
   network: Network,
   signerOrProvider: Signer | Provider,
   index: number
@@ -20,14 +21,26 @@ export const fetchFutureFromIndex = async (
     await registry.getFutureVaultAt(BigNumber.from(index))
   )
 
-  return fetchFutureFromAddress(network, signerOrProvider, futureAddress)
+  return fetchFutureAggregateFromAddress(network, signerOrProvider, futureAddress)
 }
 
-export const fetchFutureFromAddress = async (
+export type FutureAggregate = {
+  address: string
+  ibtAddress: string
+  apwibtAddress: string
+  period: BigNumber
+  platform: string
+  depositsPaused: boolean
+  withdrawalsPaused: boolean
+  nextPeriodIndex: BigNumber
+  nextPeriodTimestamp: BigNumber
+ }
+
+export const fetchFutureAggregateFromAddress = async (
   network: Network,
   signerOrProvider: Signer | Provider,
   address: string
-) => {
+): Promise<FutureAggregate> => {
   const controller = await getControllerContract(network, signerOrProvider)
   const futureContract = getFutureVaultContract(address, signerOrProvider)
   const [
@@ -63,14 +76,18 @@ export const fetchFutureFromAddress = async (
   }
 }
 
+export const fetchAllFutureAggregates = async (network: Network, signerOrProvider: Signer | Provider) => {
+  const amm = getAMMContract(network, signerOrProvider)
+  const currentPeriodIndex = await (await amm.currentPeriodIndex()).toNumber()
+  return Promise.all(range(0, currentPeriodIndex).map((periodIndex) => fetchFutureAggregateFromIndex(network, signerOrProvider, periodIndex)))
+}
+
 export const fetchAllFutureVaults = async (
   network: Network,
   signerOrProvider: Signer | Provider
 ) => {
   const registry = getRegistryContract(network, signerOrProvider)
   const count = (await registry.futureVaultCount()).toNumber()
-
-  console.log(count)
 
   const futureVaultAddresses = await Promise.all(
     range(0, count).map(index => registry.getFutureVaultAt(index))
