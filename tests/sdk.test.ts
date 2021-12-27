@@ -55,6 +55,7 @@ describe('APWineSDK', () => {
 
   it('', async () => {
     const aggr = await sdk.fetchPTTokens()
+
     console.log(aggr)
   })
 })
