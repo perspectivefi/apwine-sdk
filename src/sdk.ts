@@ -10,7 +10,11 @@ import {
   fetchAllFutureVaults,
   fetchFutureAggregateFromIndex,
   fetchFutureAggregateFromAddress,
-  withdraw
+  withdraw,
+  fetchFutureToken,
+  updateAllowance,
+  approve,
+  fetchAllowance
 } from './futures'
 import { fetchAllLPTokenPools, fetchLPTokenPool } from './lp'
 import {
@@ -65,6 +69,18 @@ class APWineSDK {
     this.network = network
   }
 
+  async approve(future: FutureVault, spender: string, amount: BigNumberish) {
+    if (!this.signer) {
+      return error('NoSigner')
+    }
+
+    return approve(this.signer, spender, future, amount)
+  }
+
+  async fetchAllowance(owner: string, spender: string, future: FutureVault) {
+    return fetchAllowance(this.provider, owner, spender, future)
+  }
+
   async fetchFutureAggregateFromIndex(index: number) {
     return fetchFutureAggregateFromIndex(this.network, this.provider, index)
   }
@@ -74,11 +90,15 @@ class APWineSDK {
   }
 
   async fetchAllFutureAggregates() {
-    return fetchAllFutureAggregates(this.network, this.provider)
+    return fetchAllFutureAggregates(this.provider, this.network)
+  }
+
+  async fetchFutureToken(future: FutureVault) {
+    return fetchFutureToken(this.provider, future)
   }
 
   async fetchAllFutureVaults() {
-    return fetchAllFutureVaults(this.network, this.provider)
+    return fetchAllFutureVaults(this.provider, this.network)
   }
 
   async fetchPTTokens() {
@@ -97,20 +117,27 @@ class APWineSDK {
     return fetchAllLPTokenPools(this.network, this.provider)
   }
 
-  async withdraw(future: FutureVault, amount: BigNumberish) {
-    if (this.signer) {
-      return withdraw(this.network, this.signer, future, amount)
+  async updateAllowance(spender: string, future: FutureVault, amount: BigNumberish) {
+    if (!this.signer) {
+      return error('NoSigner')
     }
 
-    return error('NoSigner')
+    return updateAllowance(this.signer, spender, future, amount)
+  }
+
+  async withdraw(future: FutureVault, amount: BigNumberish) {
+    if (!this.signer) {
+      return error('NoSigner')
+    }
+    return withdraw(this.signer, this.network, future, amount)
   }
 
   async deposit(future: FutureVault, amount: BigNumberish) {
-    if (this.signer) {
-      return deposit(this.network, this.signer, future, amount)
+    if (!this.signer) {
+      return error('NoSigner')
     }
 
-    return error('NoSigner')
+    return deposit(this.signer, this.network, future, amount)
   }
 }
 

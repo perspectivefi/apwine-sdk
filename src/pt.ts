@@ -5,7 +5,7 @@ import { Network } from './constants'
 import { fetchAllFutureAggregates } from './futures'
 
 export const fetchPTTokens = async (network: Network, signerOrProvider: Signer | Provider) => {
-  const futureAggregates = await fetchAllFutureAggregates(network, signerOrProvider)
+  const futureAggregates = await fetchAllFutureAggregates(signerOrProvider, network)
 
   return futureAggregates.map((fa) => PT__factory.connect(fa.ibtAddress, signerOrProvider))
 }

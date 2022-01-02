@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { FutureVault, FutureVault__factory } from '@apwine/protocol'
+import { AToken__factory, FutureVault, FutureVault__factory, TokensFactory__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import {
@@ -76,15 +76,15 @@ export const fetchFutureAggregateFromAddress = async (
   }
 }
 
-export const fetchAllFutureAggregates = async (network: Network, signerOrProvider: Signer | Provider) => {
+export const fetchAllFutureAggregates = async (signerOrProvider: Signer | Provider, network: Network) => {
   const amm = getAMMContract(network, signerOrProvider)
   const currentPeriodIndex = await (await amm.currentPeriodIndex()).toNumber()
   return Promise.all(range(0, currentPeriodIndex).map((periodIndex) => fetchFutureAggregateFromIndex(network, signerOrProvider, periodIndex)))
 }
 
 export const fetchAllFutureVaults = async (
-  network: Network,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  network: Network
 ) => {
   const registry = getRegistryContract(network, signerOrProvider)
   const count = (await registry.futureVaultCount()).toNumber()
@@ -99,8 +99,8 @@ export const fetchAllFutureVaults = async (
 }
 
 export const withdraw = async (
-  network: Network,
   signerOrProvider: Signer | Provider,
+  network: Network,
   future: FutureVault,
   amount: BigNumberish
 ) => {
@@ -109,11 +109,41 @@ export const withdraw = async (
   return controller.withdraw(future.address, amount)
 }
 
+export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault) => {
+  const ibtAddress = await future.getIBTAddress()
+
+  return AToken__factory.connect(ibtAddress, signerOrProvider)
+}
+
+export const approve = async (signerOrProvider: Signer | Provider, spender: string, future: FutureVault, amount: BigNumberish) => {
+  const token = await fetchFutureToken(signerOrProvider, future)
+
+  return token.approve(spender, amount)
+}
+
+export const fetchAllowance = async (signerOrProvider: Signer | Provider, owner: string, spender: string, future: FutureVault) => {
+  const token = await fetchFutureToken(signerOrProvider, future)
+
+  return token.allowance(owner, spender)
+}
+
+export const updateAllowance = async (signerOrProvider: Signer | Provider, spender: string, future: FutureVault, amount: BigNumberish) => {
+  const token = await fetchFutureToken(signerOrProvider, future)
+  const bignumberAmount = BigNumber.from(amount)
+
+  if (bignumberAmount.isNegative()) {
+    return token.decreaseAllowance(spender, bignumberAmount)
+  }
+
+  return token.increaseAllowance(spender, bignumberAmount.abs())
+}
+
 export const deposit = async (
-  network: Network,
   signerOrProvider: Signer | Provider,
+  network: Network,
   future: FutureVault,
   amount: BigNumberish
+
 ) => {
   const controller = await getControllerContract(network, signerOrProvider)
 

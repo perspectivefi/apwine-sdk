@@ -47,7 +47,6 @@ export const fetchAllLPTokenPools = async (
   const amm = await getAMMContract(network, signerOrProvider)
   const currentPeriodIndex = (await amm.currentPeriodIndex()).toNumber()
   const periods = range(0, currentPeriodIndex)
-  console.log(xprod(PAIR_IDS, periods))
   return Promise.all(
     xprod(PAIR_IDS, periods).map(([pairId, periodIndex]) =>
       fetchLPTokenPool(network, signerOrProvider, pairId, periodIndex)

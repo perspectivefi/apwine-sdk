@@ -4,6 +4,7 @@
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "declaration": true,
+    "target": "ES5",
     "sourceMap": true,
     "rootDir": "./src",
     "strict": true,
@@ -16,7 +17,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "include": ["src", "types", "./test", "/node_modules/@apwine", "global.d.ts"],
 }
