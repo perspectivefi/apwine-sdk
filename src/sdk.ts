@@ -1,5 +1,6 @@
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
+import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM } from '@apwine/amm'
 import { Network, PairId } from './constants'
@@ -16,7 +17,7 @@ import {
   approve,
   fetchAllowance
 } from './futures'
-import { fetchAllLPTokenPools, fetchLPTokenPool } from './lp'
+import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll } from './lp'
 import {
   getAMMContract,
   getControllerContract,
@@ -42,17 +43,17 @@ class APWineSDK {
   Controller?: Controller
 
   constructor({ network, signer, provider }: ConstructorProps) {
-    this.provider = provider
+    this.provider = new providers.MulticallProvider(provider)
     this.network = network
 
     if (signer) {
       this.signer = signer
     }
 
-    this.AMM = getAMMContract(this.network, this.provider)
-    this.Registry = getRegistryContract(this.network, this.provider)
+    this.AMM = getAMMContract(provider, network)
+    this.Registry = getRegistryContract(provider, network)
 
-    getControllerContract(network, this.provider).then(
+    getControllerContract(this.provider, this.network).then(
       controller => (this.Controller = controller)
     )
   }
@@ -102,15 +103,27 @@ class APWineSDK {
   }
 
   async fetchPTTokens() {
-    return fetchPTTokens(this.network, this.provider)
+    return fetchPTTokens(this.provider, this.network)
+  }
+
+  async isLPApprovedForAll(account: string, operator: string) {
+    return isLPApprovedForAll(this.provider, this.network, account, operator)
+  }
+
+  async approveLPForAll(account: string, approval: boolean = true) {
+    if (!this.signer) {
+      return error('NoSigner')
+    }
+
+    return approveLPForAll(this.signer, this.network, account, approval)
   }
 
   async fetchFYTTokens() {
-    return fetchFYTTokens(this.network, this.provider)
+    return fetchFYTTokens(this.provider, this.network)
   }
 
   async fetchLPTokenPool(pairId: PairId, periodIndex?: number) {
-    return fetchLPTokenPool(this.network, this.provider, pairId, periodIndex)
+    return fetchLPTokenPool(this.provider, this.network, pairId, periodIndex)
   }
 
   async fetchAllLPTokenPools() {

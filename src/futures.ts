@@ -16,7 +16,7 @@ export const fetchFutureAggregateFromIndex = async (
   signerOrProvider: Signer | Provider,
   index: number
 ) => {
-  const registry = getRegistryContract(network, signerOrProvider)
+  const registry = getRegistryContract(signerOrProvider, network)
   const futureAddress = getAddress(
     await registry.getFutureVaultAt(BigNumber.from(index))
   )
@@ -41,8 +41,8 @@ export const fetchFutureAggregateFromAddress = async (
   signerOrProvider: Signer | Provider,
   address: string
 ): Promise<FutureAggregate> => {
-  const controller = await getControllerContract(network, signerOrProvider)
-  const futureContract = getFutureVaultContract(address, signerOrProvider)
+  const controller = await getControllerContract(signerOrProvider, network)
+  const futureContract = getFutureVaultContract(signerOrProvider, address)
   const [
     ibtAddress,
     apwibtAddress,
@@ -77,7 +77,7 @@ export const fetchFutureAggregateFromAddress = async (
 }
 
 export const fetchAllFutureAggregates = async (signerOrProvider: Signer | Provider, network: Network) => {
-  const amm = getAMMContract(network, signerOrProvider)
+  const amm = getAMMContract(signerOrProvider, network)
   const currentPeriodIndex = await (await amm.currentPeriodIndex()).toNumber()
   return Promise.all(range(0, currentPeriodIndex).map((periodIndex) => fetchFutureAggregateFromIndex(network, signerOrProvider, periodIndex)))
 }
@@ -86,7 +86,7 @@ export const fetchAllFutureVaults = async (
   signerOrProvider: Signer | Provider,
   network: Network
 ) => {
-  const registry = getRegistryContract(network, signerOrProvider)
+  const registry = getRegistryContract(signerOrProvider, network)
   const count = (await registry.futureVaultCount()).toNumber()
 
   const futureVaultAddresses = await Promise.all(
@@ -104,7 +104,7 @@ export const withdraw = async (
   future: FutureVault,
   amount: BigNumberish
 ) => {
-  const controller = await getControllerContract(network, signerOrProvider)
+  const controller = await getControllerContract(signerOrProvider, network)
 
   return controller.withdraw(future.address, amount)
 }
@@ -145,7 +145,7 @@ export const deposit = async (
   amount: BigNumberish
 
 ) => {
-  const controller = await getControllerContract(network, signerOrProvider)
+  const controller = await getControllerContract(signerOrProvider, network)
 
   return controller.deposit(future.address, amount)
 }

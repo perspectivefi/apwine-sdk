@@ -9,22 +9,35 @@ import { Network, PAIR_IDS, PairId } from './constants'
 import { getAMMContract } from './contracts'
 
 export const getLPTokenContract = (
-  address: string,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  address: string
+
 ) => {
   return LPToken__factory.connect(address, signerOrProvider)
 }
 
+export const isLPApprovedForAll = async (signerOrProvider: Signer | Provider, network: Network, account: string, operator: string) => {
+  const token = getLPTokenContract(signerOrProvider, network)
+
+  return token.isApprovedForAll(account, operator)
+}
+
+export const approveLPForAll = async (signerOrProvider: Signer | Provider, network: Network, operator: string, approved:boolean) => {
+  const token = getLPTokenContract(signerOrProvider, network)
+
+  return token.setApprovalForAll(operator, approved)
+}
+
 export const fetchLPTokenPool = async (
-  network: Network,
   signerOrProvider: Signer | Provider,
+  network: Network,
   pairId: PairId,
   periodIndex?: BigNumberish
 ) => {
-  const amm = await getAMMContract(network, signerOrProvider)
+  const amm = await getAMMContract(signerOrProvider, network)
   const targetPeriodIndex = periodIndex ?? (await amm.currentPeriodIndex())
   const address = await amm.getPoolTokenAddress()
-  const token = getLPTokenContract(address, signerOrProvider)
+  const token = getLPTokenContract(signerOrProvider, address)
   const id = await amm.getLPTokenId(
     await amm.ammId(),
     targetPeriodIndex,
@@ -44,12 +57,12 @@ export const fetchAllLPTokenPools = async (
   network: Network,
   signerOrProvider: Signer | Provider
 ) => {
-  const amm = await getAMMContract(network, signerOrProvider)
+  const amm = await getAMMContract(signerOrProvider, network)
   const currentPeriodIndex = (await amm.currentPeriodIndex()).toNumber()
   const periods = range(0, currentPeriodIndex)
   return Promise.all(
     xprod(PAIR_IDS, periods).map(([pairId, periodIndex]) =>
-      fetchLPTokenPool(network, signerOrProvider, pairId, periodIndex)
+      fetchLPTokenPool(signerOrProvider, network, pairId, periodIndex)
     )
   )
 }

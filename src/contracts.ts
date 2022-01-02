@@ -11,8 +11,8 @@ import { Network } from './constants'
 import config from './config.json'
 
 export const getRegistryContract = (
-  network: Network,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  network: Network
 ) =>
   Registry__factory.connect(
     config.networks[network].REGISTRY_ADDRESS,
@@ -20,22 +20,23 @@ export const getRegistryContract = (
   )
 
 export const getAMMContract = (
-  network: Network,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  network: Network
 ) =>
   AMM__factory.connect(config.networks[network].AMM_ADDRESS, signerOrProvider)
 
 export const getControllerContract = async (
-  network: Network,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  network: Network
+
 ) => {
-  const registry = getRegistryContract(network, signerOrProvider)
+  const registry = getRegistryContract(signerOrProvider, network)
   const controllerAddress = await registry.getControllerAddress()
 
   return Controller__factory.connect(controllerAddress, signerOrProvider)
 }
 
 export const getFutureVaultContract = (
-  address: string,
-  signerOrProvider: Signer | Provider
+  signerOrProvider: Signer | Provider,
+  address: string
 ) => FutureVault__factory.connect(address, signerOrProvider)
