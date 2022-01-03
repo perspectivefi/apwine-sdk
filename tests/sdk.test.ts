@@ -48,10 +48,11 @@ describe('APWineSDK', () => {
   it('should have the registry instance set', async () => {
     expect(sdk.Registry).toBeDefined()
   })
+  sdk.fetchAllowance(owner, spender, future)
 
   it('should  have the Controller contract instance set after asyncProps are loaded', async () => {
     expect(sdk.Controller).toBeNull()
-    await sdk.asyncProps
+    await sdk.ready
     expect(sdk.Controller).toBeDefined()
   })
 

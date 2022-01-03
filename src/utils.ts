@@ -2,7 +2,6 @@ import { BytesLike } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
-import takeLastWhile from 'ramda/src/takeLastWhile'
 import errors from './errors.json'
 
 const version = 'bytes/5.5.0'
