@@ -127,7 +127,7 @@ class APWineSDK {
    * Approve transactions for a token amount on the target future vault.
    * @param future - The target future vault.
    * @param amount - The amunt of tokens to be approved.
-   * @param spender - The spender of the token amount.
+   * @param spender - The account signing the approval. Default is the spender the SDK is initialized with.
 
    * @returns - Either an error, or a transaction receipt.
    */
@@ -136,10 +136,10 @@ class APWineSDK {
   }
 
   /**
-   * Fetch the spendable amount by another party(spender) from the owners tokens on a certain future vault
+   * Fetch the spendable amount by another party(spender) from the owner's tokens on a certain future vault
    * @param owner - The token owner's wallet address
    * @param future - The future on which the allowance is set.
-   * @param spender - The entity which the allowance belongs to.
+   * @param spender - The account which is able to utilize the allowance. Default is the spender the SDK is initialized with.
    * @returns - The allowance in TokenAmount.
    */
   async allowance(owner: string, future: FutureVault, spender: string = this.spender) {
@@ -175,7 +175,7 @@ class APWineSDK {
   /**
    * Fetch the token of a future vault instance.
    * @param future - The target future vault instance.
-   * @returns {AToken} - A token instance of the future vault.
+   * @returns - A token instance of the future vault.
    */
   async fetchFutureToken(future: FutureVault) {
     return fetchFutureToken(this.provider, future)
@@ -185,7 +185,7 @@ class APWineSDK {
    * Inspect LPToken approval status of an account.
    * @param account - The account's approval to be checked.
    * @param operator - The operator the approval is given to.
-   * @returns {boolean}
+   * @returns - a boolean value of the approval of this account for all LPs.
    */
   async isLPApprovedForAll(account: string, operator: string) {
     return isLPApprovedForAll(this.provider, this.network, account, operator)
@@ -220,10 +220,10 @@ class APWineSDK {
   }
 
   /**
-  * Update the spendable amount by another party(spender) from the owners tokens on a certain future vault.
+  * Update the spendable amount by another party(spender) from the owner's tokens on a certain future vault.
   * @param future - The future on which the allowance is being set.
   * @param amount - The amount of the allowance.
-  * @param spender - The entity which is able to spend from the owners tokens.
+  * @param spender - The account signing the allowance update. Default is the spender the SDK is initialized with.
   * @returns - Either an error, or the Transaction receipt.
   */
   async updateAllowance(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender: string = this.spender) {
@@ -239,7 +239,7 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @param spender - The account signing the withdrawal.
+   * @param spender - The account signing the deposit. Default is the spender the SDK is initialized with.
    * @returns - Either an error, or the Transaction receipt.
    */
   async withdraw(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender = this.spender) {
@@ -255,7 +255,7 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @param spender - The account signing the deposit
+   * @param spender - The account signing the deposit. Default is the spender the SDK is initialized with.
    * @returns - Either an error, or the Transaction receipt.
    */
   async deposit(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender = this.spender) {
