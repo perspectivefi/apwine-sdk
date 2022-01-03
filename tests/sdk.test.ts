@@ -23,7 +23,9 @@ describe('APWineSDK', () => {
       (process.env.PRIVATE_KEY as unknown) as SigningKey,
       alchemyProvider
     )
+  })
 
+  beforeEach(() => {
     sdk = new APWineSDK({
       provider: alchemyProvider,
       signer,
@@ -47,19 +49,15 @@ describe('APWineSDK', () => {
     expect(sdk.Registry).toBeDefined()
   })
 
-  it('should eventually have the controller instance set', async () => {
-    expect(sdk.Controller).toBeUndefined()
+  it('should  have the Controller contract instance set after asyncProps are loaded', async () => {
+    expect(sdk.Controller).toBeNull()
     await sdk.asyncProps
     expect(sdk.Controller).toBeDefined()
   })
 
-  it('', async () => {
-    const pt = await sdk.fetchPTTokens()
-
-    const result = await Promise.all(pt.map(async (p) => (await p.balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')).toNumber()))
-    console.log(result)
-
-    // const lpIsAPPRoved = await sdk.isLPApprovedForAll('0x11118ABa876b4550FAA71bb2F62E7c814F26753D', )
-    // console.log(lpIsAPPRoved)
+  it('should  have the LPToken contract instance set after asyncProps are loaded', async () => {
+    expect(sdk.LP).toBeNull()
+    await sdk.asyncProps
+    expect(sdk.LP).toBeDefined()
   })
 })

@@ -43,8 +43,8 @@ class APWineSDK {
   Registry: Registry
 
   // async props
-  LP?: LPToken
-  Controller?: Controller
+  LP: LPToken | null = null
+  Controller: Controller | null = null
 
   constructor({ network, signer, provider }: ConstructorProps) {
     this.provider = new providers.MulticallProvider(provider)
