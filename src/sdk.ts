@@ -142,7 +142,7 @@ class APWineSDK {
    * @param spender - The entity which the allowance belongs to.
    * @returns - The allowance in TokenAmount.
    */
-  async fetchAllowance(owner: string, future: FutureVault, spender: string = this.spender) {
+  async allowance(owner: string, future: FutureVault, spender: string = this.spender) {
     return fetchAllowance(this.provider, owner, spender, future)
   }
 
@@ -226,7 +226,11 @@ class APWineSDK {
   * @param spender - The entity which is able to spend from the owners tokens.
   * @returns - Either an error, or the Transaction receipt.
   */
-  async updateAllowance(future: FutureVault, amount: BigNumberish, spender: string = this.spender) {
+  async updateAllowance(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender: string = this.spender) {
+    if (autoApprove) {
+      this.approve(future, amount, spender)
+    }
+
     return updateAllowance(this.signer, spender, future, amount)
   }
 

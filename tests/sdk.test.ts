@@ -29,7 +29,8 @@ describe('APWineSDK', () => {
     sdk = new APWineSDK({
       provider: alchemyProvider,
       signer,
-      network: 'kovan'
+      network: 'kovan',
+      spender: '0x11118ABa876b4550FAA71bb2F62E7c814F26753D'
     })
   })
 
@@ -48,7 +49,6 @@ describe('APWineSDK', () => {
   it('should have the registry instance set', async () => {
     expect(sdk.Registry).toBeDefined()
   })
-  sdk.fetchAllowance(owner, spender, future)
 
   it('should  have the Controller contract instance set after asyncProps are loaded', async () => {
     expect(sdk.Controller).toBeNull()
@@ -58,7 +58,13 @@ describe('APWineSDK', () => {
 
   it('should  have the LPToken contract instance set after asyncProps are loaded', async () => {
     expect(sdk.LP).toBeNull()
-    await sdk.asyncProps
+    await sdk.ready
     expect(sdk.LP).toBeDefined()
+  })
+
+  it('', async () => {
+    await sdk.ready
+
+    if (sdk.vaults) { await sdk.withdraw(sdk.vaults[0], 1).then(console.log) }
   })
 })
