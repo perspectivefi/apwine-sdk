@@ -49,7 +49,17 @@ describe('APWineSDK', () => {
 
   it('should eventually have the controller instance set', async () => {
     expect(sdk.Controller).toBeUndefined()
-    await delay(2000)
+    await sdk.asyncProps
     expect(sdk.Controller).toBeDefined()
+  })
+
+  it('', async () => {
+    const pt = await sdk.fetchPTTokens()
+
+    const result = await Promise.all(pt.map(async (p) => (await p.balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')).toNumber()))
+    console.log(result)
+
+    // const lpIsAPPRoved = await sdk.isLPApprovedForAll('0x11118ABa876b4550FAA71bb2F62E7c814F26753D', )
+    // console.log(lpIsAPPRoved)
   })
 })

@@ -1,3 +1,5 @@
 {
-    "NoSigner": "Please provide a signer either by calling sdk.updateSinger, or creating a new SDK instance with a signer"
+    "NoSigner": "Please provide a signer either by calling sdk.updateSinger, or creating a new SDK instance with a signer",
+    "LPAddNotApproved": "Adding liquidity to this AMM is not approved for this account.",
+    "LPRemovalNotApproved": "Removing liquidity from this AMM is not approved for this account."
 }

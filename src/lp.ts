@@ -7,6 +7,7 @@ import xprod from 'ramda/src/xprod'
 
 import { Network, PAIR_IDS, PairId } from './constants'
 import { getAMMContract } from './contracts'
+import { error } from './utils'
 
 export const getLPTokenContract = (
   signerOrProvider: Signer | Provider,
@@ -22,10 +23,59 @@ export const isLPApprovedForAll = async (signerOrProvider: Signer | Provider, ne
   return token.isApprovedForAll(account, operator)
 }
 
-export const approveLPForAll = async (signerOrProvider: Signer | Provider, network: Network, operator: string, approved:boolean) => {
-  const token = getLPTokenContract(signerOrProvider, network)
+export const approveLPForAll = async (signer: Signer | undefined, network: Network, operator: string, approved:boolean) => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const token = getLPTokenContract(signer, network)
 
   return token.setApprovalForAll(operator, approved)
+}
+
+export const addLiquidity = async (
+  signer: Signer | undefined,
+  network:Network,
+  account: string,
+  operator: string,
+  pairId: PairId,
+  poolAmountOut: BigNumberish,
+  maxAmountsIn: [BigNumberish, BigNumberish]) => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const isApproved = await isLPApprovedForAll(signer, network, account, operator)
+
+  if (!isApproved) {
+    return error('LPAddNotApproved')
+  }
+  const amm = getAMMContract(signer, network)
+
+  return error || amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
+}
+
+export const removeLiquidity = async (
+  signer: Signer | undefined,
+  network:Network,
+  account: string,
+  operator: string,
+  pairId: PairId,
+  poolAmountOut: BigNumberish,
+  maxAmountsIn: [BigNumberish, BigNumberish]) => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const isApproved = await isLPApprovedForAll(signer, network, account, operator)
+
+  if (!isApproved) {
+    return error('LPRemovalNotApproved')
+  }
+
+  const amm = getAMMContract(signer, network)
+
+  return error || amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
 }
 
 export const fetchLPTokenPool = async (

@@ -2,6 +2,7 @@ import { BytesLike } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
+import takeLastWhile from 'ramda/src/takeLastWhile'
 import errors from './errors.json'
 
 const version = 'bytes/5.5.0'
@@ -217,8 +218,4 @@ export function getAddress(address: string): string {
   return result
 }
 
-export const error = (input: keyof typeof errors) => {
-  const [error, message] = Object.entries(errors[input])
-
-  return { error, message }
-}
+export const error = (type: keyof typeof errors) => ({ error: type, message: errors[type] })

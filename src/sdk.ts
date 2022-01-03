@@ -2,7 +2,7 @@ import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
-import { AMM } from '@apwine/amm'
+import { AMM, LPToken } from '@apwine/amm'
 import { Network, PairId } from './constants'
 
 import {
@@ -17,13 +17,12 @@ import {
   approve,
   fetchAllowance
 } from './futures'
-import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll } from './lp'
+import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, getLPTokenContract, isLPApprovedForAll } from './lp'
 import {
   getAMMContract,
   getControllerContract,
   getRegistryContract
 } from './contracts'
-import { error } from './utils'
 import { fetchPTTokens } from './pt'
 import { fetchFYTTokens } from './fyt'
 
@@ -34,12 +33,17 @@ type ConstructorProps = {
 }
 
 class APWineSDK {
+  asyncProps: ReturnType<APWineSDK['initAsyncProps']>
+
   provider: Provider
   signer?: Signer
   network: Network
 
   AMM: AMM
   Registry: Registry
+
+  // async props
+  LP?: LPToken
   Controller?: Controller
 
   constructor({ network, signer, provider }: ConstructorProps) {
@@ -53,9 +57,18 @@ class APWineSDK {
     this.AMM = getAMMContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
 
-    getControllerContract(this.provider, this.network).then(
-      controller => (this.Controller = controller)
-    )
+    this.asyncProps = this.initAsyncProps()
+  }
+
+  private async initAsyncProps() {
+    return Promise.all([
+      getControllerContract(this.provider, this.network).then(
+        controller => (this.Controller = controller)
+      ),
+      this.AMM.getPoolTokenAddress().then((lpTokenAddress) =>
+        (this.LP = getLPTokenContract(this.provider, lpTokenAddress))
+      )
+    ])
   }
 
   updateSigner(signer: Signer) {
@@ -71,10 +84,6 @@ class APWineSDK {
   }
 
   async approve(future: FutureVault, spender: string, amount: BigNumberish) {
-    if (!this.signer) {
-      return error('NoSigner')
-    }
-
     return approve(this.signer, spender, future, amount)
   }
 
@@ -111,10 +120,6 @@ class APWineSDK {
   }
 
   async approveLPForAll(account: string, approval: boolean = true) {
-    if (!this.signer) {
-      return error('NoSigner')
-    }
-
     return approveLPForAll(this.signer, this.network, account, approval)
   }
 
@@ -131,25 +136,14 @@ class APWineSDK {
   }
 
   async updateAllowance(spender: string, future: FutureVault, amount: BigNumberish) {
-    if (!this.signer) {
-      return error('NoSigner')
-    }
-
     return updateAllowance(this.signer, spender, future, amount)
   }
 
   async withdraw(future: FutureVault, amount: BigNumberish) {
-    if (!this.signer) {
-      return error('NoSigner')
-    }
     return withdraw(this.signer, this.network, future, amount)
   }
 
   async deposit(future: FutureVault, amount: BigNumberish) {
-    if (!this.signer) {
-      return error('NoSigner')
-    }
-
     return deposit(this.signer, this.network, future, amount)
   }
 }
