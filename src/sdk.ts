@@ -38,7 +38,6 @@ class APWineSDK {
 
   network: Network
   provider: Provider
-  spender: string;
   signer?: Signer
 
   AMM: AMM
@@ -56,10 +55,9 @@ class APWineSDK {
    * @param param0{ConstructorProps} - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider, spender }: ConstructorProps) {
+  constructor({ network, signer, provider }: ConstructorProps) {
     this.provider = new providers.MulticallProvider(provider)
     this.network = network
-    this.spender = spender
 
     if (signer) {
       this.signer = signer
@@ -116,33 +114,25 @@ class APWineSDK {
   }
 
   /**
-   * Updates the primary spender on an existing APWineSDK instance.
-   * @param spender -  The primary spender
-   */
-  updateSpender(spender: string) {
-    this.spender = spender
-  }
-
-  /**
    * Approve transactions for a token amount on the target future vault.
+   * @param spender - The account signing the approval. Default is the spender the SDK is initialized with.
    * @param future - The target future vault.
    * @param amount - The amunt of tokens to be approved.
-   * @param spender - The account signing the approval. Default is the spender the SDK is initialized with.
 
    * @returns - Either an error, or a transaction receipt.
    */
-  async approve(future: FutureVault, amount: BigNumberish, spender: string = this.spender) {
+  async approve(spender: string, future: FutureVault, amount: BigNumberish) {
     return approve(this.signer, spender, future, amount)
   }
 
   /**
    * Fetch the spendable amount by another party(spender) from the owner's tokens on a certain future vault
+   * @param spender - The account which is able to utilize the allowance. Default is the spender the SDK is initialized with.
    * @param owner - The token owner's wallet address
    * @param future - The future on which the allowance is set.
-   * @param spender - The account which is able to utilize the allowance. Default is the spender the SDK is initialized with.
    * @returns - The allowance in TokenAmount.
    */
-  async allowance(owner: string, future: FutureVault, spender: string = this.spender) {
+  async allowance(spender: string, owner: string, future: FutureVault) {
     return fetchAllowance(this.provider, owner, spender, future)
   }
 
@@ -221,14 +211,14 @@ class APWineSDK {
 
   /**
   * Update the spendable amount by another party(spender) from the owner's tokens on a certain future vault.
+  * @param spender - The account signing the allowance update. Default is the spender the SDK is initialized with.
   * @param future - The future on which the allowance is being set.
   * @param amount - The amount of the allowance.
-  * @param spender - The account signing the allowance update. Default is the spender the SDK is initialized with.
   * @returns - Either an error, or the Transaction receipt.
   */
-  async updateAllowance(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender: string = this.spender) {
-    if (autoApprove) {
-      this.approve(future, amount, spender)
+  async updateAllowance(spender: string, future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+    if (options.autoApprove) {
+      this.approve(spender, future, amount)
     }
 
     return updateAllowance(this.signer, spender, future, amount)
@@ -239,12 +229,11 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @param spender - The account signing the deposit. Default is the spender the SDK is initialized with.
    * @returns - Either an error, or the Transaction receipt.
    */
-  async withdraw(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender = this.spender) {
-    if (autoApprove) {
-      await this.approve(future, amount, spender)
+  async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+    if (options.autoApprove && this.Controller) {
+      await this.approve(this.Controller.address, future, amount)
     }
 
     return withdraw(this.signer, this.network, future, amount)
@@ -255,12 +244,11 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @param spender - The account signing the deposit. Default is the spender the SDK is initialized with.
    * @returns - Either an error, or the Transaction receipt.
    */
-  async deposit(future: FutureVault, amount: BigNumberish, autoApprove: boolean = false, spender = this.spender) {
-    if (autoApprove) {
-      await this.approve(future, amount, spender)
+  async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+    if (options.autoApprove && this.Controller) {
+      await this.approve(this.Controller.address, future, amount)
     }
 
     return deposit(this.signer, this.network, future, amount)
