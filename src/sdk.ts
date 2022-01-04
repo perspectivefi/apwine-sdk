@@ -115,9 +115,8 @@ class APWineSDK {
 
   /**
    * Approve transactions for a token amount on the target future vault.
-   * @param spender - The account signing the approval. Default is the spender the SDK is initialized with.
-   * @param future - The target future vault.
-   * @param amount - The amunt of tokens to be approved.
+   * @param spender - The contract/entity receiving approval for spend.
+   * @param amount - The amount of tokens to be approved.
 
    * @returns - Either an error, or a transaction receipt.
    */
@@ -127,7 +126,7 @@ class APWineSDK {
 
   /**
    * Fetch the spendable amount by another party(spender) from the owner's tokens on a certain future vault
-   * @param spender - The account which is able to utilize the allowance. Default is the spender the SDK is initialized with.
+   * @param spender - The contract/entity to which the allowance is set .
    * @param owner - The token owner's wallet address
    * @param future - The future on which the allowance is set.
    * @returns - The allowance in TokenAmount.
@@ -183,7 +182,7 @@ class APWineSDK {
 
   /**
    * Set LPToken approval status for an account.
-   * @param account - The account's approval to be set.
+   * @param account - The account for which the approval will be set.
    * @param approval - Boolean value of the approval.
    * @returns
    */
@@ -211,7 +210,7 @@ class APWineSDK {
 
   /**
   * Update the spendable amount by another party(spender) from the owner's tokens on a certain future vault.
-  * @param spender - The account signing the allowance update. Default is the spender the SDK is initialized with.
+  * @param spender - The contract/entity for which the allowance will be updated.
   * @param future - The future on which the allowance is being set.
   * @param amount - The amount of the allowance.
   * @returns - Either an error, or the Transaction receipt.
