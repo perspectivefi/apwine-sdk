@@ -2,6 +2,7 @@ import { BigNumber, BigNumberish, Signer } from 'ethers'
 import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
+import { Token, TokenAmount } from '@uniswap/sdk'
 import {
   getAMMContract,
   getControllerContract,
@@ -10,6 +11,7 @@ import {
 } from './contracts'
 import { Network } from './constants'
 import { error, getAddress } from './utils'
+import { CHAIN_IDS } from '.'
 
 export const fetchFutureAggregateFromIndex = async (
   network: Network,
@@ -129,10 +131,13 @@ export const approve = async (signer: Signer | undefined, spender: string, futur
   return token.approve(spender, amount)
 }
 
-export const fetchAllowance = async (signerOrProvider: Signer | Provider, owner: string, spender: string, future: FutureVault) => {
-  const token = await fetchFutureToken(signerOrProvider, future)
+export const fetchAllowance = async (signerOrProvider: Signer | Provider, network: Network, owner: string, spender: string, future: FutureVault) => {
+  const t = await fetchFutureToken(signerOrProvider, future)
+  const allowance = await t.allowance(owner, spender)
+  const decimals = await t.decimals()
+  const token = new Token(CHAIN_IDS[network], t.address, decimals)
 
-  return token.allowance(owner, spender)
+  return new TokenAmount(token, allowance.toBigInt())
 }
 
 export const updateAllowance = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish) => {

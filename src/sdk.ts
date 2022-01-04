@@ -136,7 +136,7 @@ class APWineSDK {
    * @returns - The allowance in TokenAmount.
    */
   async allowance(spender: string, owner: string, future: FutureVault) {
-    return fetchAllowance(this.provider, owner, spender, future)
+    return fetchAllowance(this.provider, this.network, owner, spender, future)
   }
 
   /**

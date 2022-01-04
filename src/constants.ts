@@ -5,3 +5,9 @@ export type PairId = typeof PAIR_IDS[number]
 
 export type Network = keyof typeof config.networks
 export const NETWORKS = Object.keys(config.networks) as Network[]
+
+export const CHAIN_IDS: Record<Network, number> = {
+  kovan: 42,
+  mainnet: 1,
+  polygon: 137
+}
