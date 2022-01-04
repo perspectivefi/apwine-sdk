@@ -87,6 +87,7 @@ This is the SDK which lets you interact with the APWine protocol, and the contra
   ```sh
   yarn add @apwine/sdk
   ```
+###### Note: You can access the raw typechain output of our contracts by installing ```@apwine/protocol & @apwine/amm```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
