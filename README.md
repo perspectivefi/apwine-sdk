@@ -1,4 +1,3 @@
-# Getting Started
 <div id="top"></div>
 
 [![Contributors][contributors-shield]][contributors-url]
@@ -11,8 +10,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/APwine/apwine-sdk">
+    <img src="https://app.apwine.fi/_next/image?url=%2Fimages%2Ftokens%2Fapw.png&w=3840&q=75" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">APWine SDK</h3>
@@ -51,7 +50,6 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -60,8 +58,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
 This is the SDK which lets you interact with the APWine protocol, and the contracts.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -69,8 +65,6 @@ This is the SDK which lets you interact with the APWine protocol, and the contra
 
 
 ### Built With
-
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
 * [Typescript](https://www.typescriptlang.org/)
 * [Ethers](https://docs.ethers.io/)
@@ -150,7 +144,6 @@ if(sdk.ready){
 ## Roadmap
 - [x] Add support for deposit & withdraw
 - [ ] Add support for tokenswaps
-- [ ] Add "components" document to easily copy & paste sections of the readme
 
 See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
@@ -196,16 +189,15 @@ Project Link: [https://github.com/APWine/apwine-sdk](https://github.com/APWine/a
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/APWine/apwine-sdk/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/APWine/apwine-sdk.svg?style=for-the-badge
+[contributors-url]: https://github.com/APWine/apwine-sdk/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/APWine/apwine-sdk.svg?style=for-the-badge
+[forks-url]: https://github.com/apwine/apwine-sdk/network/members
+[stars-shield]: https://img.shields.io/github/stars/APWine/apwine-sdk.svg?style=for-the-badge
 [stars-url]:https://github.com/APWine/apwine-sdk/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/APWine/apwine-sdk.svg?style=for-the-badge
 [issues-url]: https://github.com/APWine/apwine-sdk/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/APWine/apwine-sdk.svg?style=for-the-badge
 [license-url]: https://github.com/APWine/apwine-sdk/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/apwine/
-[product-screenshot]: images/screenshot.png
