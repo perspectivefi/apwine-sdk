@@ -59,10 +59,4 @@ describe('APWineSDK', () => {
     await sdk.ready
     expect(sdk.LP).toBeDefined()
   })
-
-  it('', async () => {
-    const vaults = await sdk.fetchAllFutureVaults()
-
-    sdk.deposit(vaults[0], 1)
-  })
 })

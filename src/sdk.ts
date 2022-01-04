@@ -37,7 +37,7 @@ type ConstructorOptions = {
 }
 
 class APWineSDK {
-  ready: Promise<boolean>
+  ready: ReturnType<APWineSDK['initialize']> | boolean = false
 
   network: Network
   provider: Provider
@@ -58,7 +58,6 @@ class APWineSDK {
      and an optional signer.
    */
   constructor({ network, signer, provider }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
-    this.ready = Promise.resolve(false)
     this.provider = new providers.MulticallProvider(provider)
     this.network = network
 
@@ -70,7 +69,7 @@ class APWineSDK {
     this.Registry = getRegistryContract(provider, network)
 
     if (options.initialize) {
-      this.ready = this.initialize()
+      this.initialize()
     }
   }
 
@@ -79,7 +78,7 @@ class APWineSDK {
    * @returns - A Promise of a collection of asynchronous props wrapped into Promise.all
    */
   async initialize() {
-    await Promise.all([
+    const ready = Promise.all([
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
@@ -90,7 +89,8 @@ class APWineSDK {
       )
     ])
 
-    return true
+    this.ready = ready
+    return ready
   }
 
   /**
