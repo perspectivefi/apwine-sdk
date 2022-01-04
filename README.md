@@ -114,7 +114,7 @@ const sdk = new APWineSDK({
   network: 'kovan'
 })
 
-// Fetch all future vaults inspect them, and then withdraw from one
+// Fetch all future vaults, then inspect and withdraw from one
 
 if(sdk.ready){
   const vaults = await sdk.fetchAllFutureVaults()
