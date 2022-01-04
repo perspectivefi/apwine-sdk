@@ -5,8 +5,6 @@ import { AlchemyProvider } from '@ethersproject/providers'
 import { SigningKey } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms))
-
 describe('APWineSDK', () => {
   let alchemyProvider: AlchemyProvider, signer: Signer, sdk: APWineSDK
 
@@ -29,8 +27,8 @@ describe('APWineSDK', () => {
     sdk = new APWineSDK({
       provider: alchemyProvider,
       signer,
-      network: 'kovan',
-      spender: '0x11118ABa876b4550FAA71bb2F62E7c814F26753D'
+      network: 'kovan'
+
     })
   })
 
@@ -63,8 +61,8 @@ describe('APWineSDK', () => {
   })
 
   it('', async () => {
-    await sdk.ready
+    const vaults = await sdk.fetchAllFutureVaults()
 
-    if (sdk.vaults) { await sdk.withdraw(sdk.vaults[0], 1).then(console.log) }
+    sdk.deposit(vaults[0], 1)
   })
 })

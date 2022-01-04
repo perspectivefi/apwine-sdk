@@ -1,6 +1,6 @@
 
 import { LPToken__factory } from '@apwine/amm'
-import { BigNumber, BigNumberish, Signer } from 'ethers'
+import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'

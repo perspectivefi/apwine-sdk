@@ -29,12 +29,15 @@ import { fetchFYTTokens } from './fyt'
 type ConstructorProps = {
   network: Network
   provider: Provider
-  spender: string
   signer?: Signer
 }
 
+type ConstructorOptions = {
+  initialize: boolean
+}
+
 class APWineSDK {
-  ready: ReturnType<APWineSDK['initialize']>
+  ready: Promise<boolean>
 
   network: Network
   provider: Provider
@@ -48,14 +51,14 @@ class APWineSDK {
   FYTs: FutureYieldToken[] | null = null
   LP: LPToken | null = null
   Controller: Controller | null = null
-  vaults: FutureVault[] | null = null
 
   /**
    *Creates a new APWine SDK instance.
    * @param param0{ConstructorProps} - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider }: ConstructorProps) {
+  constructor({ network, signer, provider }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
+    this.ready = Promise.resolve(false)
     this.provider = new providers.MulticallProvider(provider)
     this.network = network
 
@@ -66,15 +69,17 @@ class APWineSDK {
     this.AMM = getAMMContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
 
-    this.ready = this.initialize()
+    if (options.initialize) {
+      this.ready = this.initialize()
+    }
   }
 
   /**
    * Initializes all asynchronous properties, and sets the resulting promise in this.asyncProps
    * @returns - A Promise of a collection of asynchronous props wrapped into Promise.all
    */
-  private async initialize() {
-    return Promise.all([
+  async initialize() {
+    await Promise.all([
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
@@ -82,11 +87,10 @@ class APWineSDK {
       fetchFYTTokens(this.provider, this.network).then((fyts) => (this.FYTs = fyts)),
       this.AMM.getPoolTokenAddress().then((lpTokenAddress) =>
         (this.LP = getLPTokenContract(this.provider, lpTokenAddress))
-      ),
-      fetchAllFutureVaults(this.provider, this.network).then((vaults) => (
-        this.vaults = vaults
-      ))
+      )
     ])
+
+    return true
   }
 
   /**
@@ -99,7 +103,7 @@ class APWineSDK {
 
   /**
    * Updates the network on an existing APWineSDK instance.
-   * @param network{Network} - The network on which the SDK instance operates
+   * @param network - The network on which the SDK instance operates
    */
   updateNetwork(network: Network) {
     this.network = network
@@ -125,7 +129,7 @@ class APWineSDK {
   }
 
   /**
-   * Fetch the spendable amount by another party(spender) from the owner's tokens on a certain future vault
+   * Fetch the spendable amount by another party(spender) from the owner's tokens on a future vault
    * @param spender - The contract/entity to which the allowance is set .
    * @param owner - The token owner's wallet address
    * @param future - The future on which the allowance is set.
@@ -171,6 +175,14 @@ class APWineSDK {
   }
 
   /**
+   * Fetch all future vaults.
+   * @returns - All FutureVault instances.
+   */
+  async fetchAllFutureVaults() {
+    return fetchAllFutureVaults(this.provider, this.network)
+  }
+
+  /**
    * Inspect LPToken approval status of an account.
    * @param account - The account's approval to be checked.
    * @param operator - The operator the approval is given to.
@@ -209,7 +221,7 @@ class APWineSDK {
   }
 
   /**
-  * Update the spendable amount by another party(spender) from the owner's tokens on a certain future vault.
+  * Update the spendable amount by another party(spender) from the owner's tokens on a future vault.
   * @param spender - The contract/entity for which the allowance will be updated.
   * @param future - The future on which the allowance is being set.
   * @param amount - The amount of the allowance.
