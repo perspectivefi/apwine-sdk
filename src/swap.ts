@@ -63,6 +63,10 @@ export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull) => {
       router.getAmountOut(amm.address, poolPath, tokenPath, amount)
     ])
 
+    if (slippageTolerance > 100 || slippageTolerance < 1) {
+      return error('FaultySlippage')
+    }
+
     const amountOut = tokenAmountIn.mul(100 + slippageTolerance).div(100)
     const amountIn = tokenAmountOut.mul(100 - slippageTolerance).div(100)
 
