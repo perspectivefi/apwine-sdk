@@ -68,6 +68,9 @@ This is the SDK which lets you interact with the APWine protocol, and the contra
 
 * [Typescript](https://www.typescriptlang.org/)
 * [Ethers](https://docs.ethers.io/)
+* [TSDX](https://tsdx.io/)
+* [Ramda](https://ramdajs.com/)
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -84,6 +87,7 @@ This is the SDK which lets you interact with the APWine protocol, and the contra
   ```sh
   yarn add @apwine/sdk
   ```
+###### Note: You can access the raw typechain output of our contracts by installing ```@apwine/protocol & @apwine/amm```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
