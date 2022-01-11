@@ -61,7 +61,7 @@ class APWineSDK {
 
   /**
    *Creates a new APWine SDK instance.
-   * @param param0{ConstructorProps} - An object containing a network a spender,  a provider
+   * @param param0 - An object containing a network a spender,  a provider
      and an optional signer.
    */
   constructor({ network, signer, provider, defaultSlippage = 5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
@@ -83,7 +83,7 @@ class APWineSDK {
   }
 
   /**
-   * Initializes all asynchronous properties, and sets the resulting promise in this.asyncProps
+   * Initializes all asynchronous properties, and sets the resulting promise in sdkInstance.ready
    * @returns - A Promise of a collection of asynchronous props wrapped into Promise.all
    */
   async initialize() {
