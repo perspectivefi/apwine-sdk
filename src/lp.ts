@@ -52,7 +52,7 @@ export const addLiquidity = async (
   }
   const amm = getAMMContract(signer, network)
 
-  return error || amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  return amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
 }
 
 export const removeLiquidity = async (
@@ -75,7 +75,7 @@ export const removeLiquidity = async (
 
   const amm = getAMMContract(signer, network)
 
-  return error || amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  return amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
 }
 
 export const fetchLPTokenPool = async (
