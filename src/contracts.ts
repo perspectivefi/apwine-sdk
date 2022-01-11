@@ -3,7 +3,7 @@ import {
   FutureVault__factory,
   Registry__factory
 } from '@apwine/protocol'
-import { AMM__factory } from '@apwine/amm'
+import { AMMRouter__factory, AMM__factory } from '@apwine/amm'
 import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
 import { Network } from './constants'
@@ -24,6 +24,12 @@ export const getAMMContract = (
   network: Network
 ) =>
   AMM__factory.connect(config.networks[network].AMM_ADDRESS, signerOrProvider)
+
+export const getAMMRouterContract = (
+  signerOrProvider: Signer | Provider,
+  network: Network
+) =>
+  AMMRouter__factory.connect(config.networks[network].AMM_ROUTER, signerOrProvider)
 
 export const getControllerContract = async (
   signerOrProvider: Signer | Provider,

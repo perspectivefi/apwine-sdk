@@ -2,8 +2,8 @@ import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, FutureYieldToken, PT, Registry } from '@apwine/protocol'
-import { AMM, LPToken } from '@apwine/amm'
-import { Network, PairId } from './constants'
+import { AMM, AMMRouter, LPToken } from '@apwine/amm'
+import { Network, PairId, APWToken } from './constants'
 
 import {
   deposit,
@@ -20,16 +20,20 @@ import {
 import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, getLPTokenContract, isLPApprovedForAll } from './lp'
 import {
   getAMMContract,
+  getAMMRouterContract,
   getControllerContract,
   getRegistryContract
 } from './contracts'
 import { fetchPTTokens } from './pt'
 import { fetchFYTTokens } from './fyt'
+import { findTokenPath } from './utils/swap'
+import { defaultSwapOptions, swap, swapIn, SwapOptions, swapOut, SwapParams } from './swap'
 
 type ConstructorProps = {
   network: Network
   provider: Provider
   signer?: Signer
+  defaultSlippage?: BigNumberish
 }
 
 type ConstructorOptions = {
@@ -39,12 +43,15 @@ type ConstructorOptions = {
 class APWineSDK {
   ready: ReturnType<APWineSDK['initialize']> | boolean = false
 
+  defaultSlippage: BigNumberish
+
   network: Network
   provider: Provider
   signer?: Signer
 
   AMM: AMM
   Registry: Registry
+  Router: AMMRouter
 
   // async props
   PTs: PT[] | null = null
@@ -57,8 +64,9 @@ class APWineSDK {
    * @param param0{ConstructorProps} - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
+  constructor({ network, signer, provider, defaultSlippage = '0.05' }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
+    this.defaultSlippage = defaultSlippage
     this.network = network
 
     if (signer) {
@@ -67,6 +75,7 @@ class APWineSDK {
 
     this.AMM = getAMMContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
+    this.Router = getAMMRouterContract(provider, network)
 
     if (options.initialize) {
       this.initialize()
@@ -117,6 +126,10 @@ class APWineSDK {
     this.signer = signer
   }
 
+  updateSlippageTolerance(slippage: BigNumberish) {
+    this.defaultSlippage = slippage
+  }
+
   /**
    * Approve transactions for a token amount on the target future vault.
    * @param spender - The contract/entity receiving approval for spend.
@@ -154,7 +167,7 @@ class APWineSDK {
    * @returns - An aggregated object with future related data.
    */
   async fetchFutureAggregateFromAddress(futureAddress: string) {
-    return fetchFutureAggregateFromAddress(this.network, this.provider, futureAddress)
+    return fetchFutureAggregateFromAddress(this.provider, this.network, futureAddress)
   }
 
   /**
@@ -263,6 +276,40 @@ class APWineSDK {
     }
 
     return deposit(this.signer, this.network, future, amount)
+  }
+
+  async swapIn(params: SwapParams, options?: SwapOptions) {
+    return swapIn({
+      ...params,
+      signer: this.signer,
+      network: this.network
+    }, {
+      ...defaultSwapOptions,
+      ...options
+    })
+  }
+
+  async swapOut(params: SwapParams, options?: SwapOptions) {
+    return swapOut({
+      ...params,
+      signer: this.signer,
+      network: this.network
+    }, {
+      ...defaultSwapOptions,
+      ...options
+    })
+  }
+
+  /**
+   * Shows what steps to take swapping between a given a source and a target token.
+   * @param from  - source token
+   * @param to  - target token
+   * @param visual - choose result format: ['Token1', 'Token2', ...] || 'Token1->Token2'
+   * @returns tokenSwapPath from left to right
+   */
+  howToSwap(from: APWToken, to: APWToken, visual?: boolean) {
+    const { namedTokenPath, graphSearchResult } = findTokenPath(from, to)
+    return visual ? graphSearchResult?.join('->') : namedTokenPath
   }
 }
 

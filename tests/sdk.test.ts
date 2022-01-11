@@ -59,4 +59,13 @@ describe('APWineSDK', () => {
     await sdk.ready
     expect(sdk.LP).toBeDefined()
   })
+
+  it('should be able to tell how to swap tokens', () => {
+    expect(sdk.howToSwap('Underlying', 'FYT')).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
+  })
+
+  it('swap', async () => {
+    const receipt = await sdk.swapIn({ from: 'Underlying', to: 'PT', amount: 1 }, { slippageTolerance: 5, autoApprove: true })
+    console.log(receipt)
+  })
 })

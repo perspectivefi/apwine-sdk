@@ -21,6 +21,7 @@
         "space-before-function-paren": "off",
         "no-unused-vars": "warn",
         "promise/param-names": "off",
-        "import/order": "error"
+        "import/order": "error",
+        "no-dupe-class-members": "off"
     }
 }

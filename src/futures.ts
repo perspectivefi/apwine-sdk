@@ -9,9 +9,8 @@ import {
   getFutureVaultContract,
   getRegistryContract
 } from './contracts'
-import { Network } from './constants'
-import { error, getAddress } from './utils'
-import { CHAIN_IDS } from '.'
+import { error, getAddress } from './utils/general'
+import { CHAIN_IDS, Network } from './constants'
 
 export const fetchFutureAggregateFromIndex = async (
   network: Network,
@@ -23,7 +22,7 @@ export const fetchFutureAggregateFromIndex = async (
     await registry.getFutureVaultAt(BigNumber.from(index))
   )
 
-  return fetchFutureAggregateFromAddress(network, signerOrProvider, futureAddress)
+  return fetchFutureAggregateFromAddress(signerOrProvider, network, futureAddress)
 }
 
 export type FutureAggregate = {
@@ -39,8 +38,8 @@ export type FutureAggregate = {
  }
 
 export const fetchFutureAggregateFromAddress = async (
-  network: Network,
   signerOrProvider: Signer | Provider,
+  network: Network,
   address: string
 ): Promise<FutureAggregate> => {
   const controller = await getControllerContract(signerOrProvider, network)

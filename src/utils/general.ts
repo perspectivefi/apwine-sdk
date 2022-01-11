@@ -2,7 +2,7 @@ import { BytesLike } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
-import errors from './errors.json'
+import errors from '../errors.json'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)
@@ -217,4 +217,9 @@ export function getAddress(address: string): string {
   return result
 }
 
-export const error = (type: keyof typeof errors) => ({ error: type, message: errors[type] })
+export const error = (type: keyof typeof errors, extraData?: any) => ({ error: type, message: errors[type], extraData })
+export type Error = ReturnType<typeof error>
+
+export const isError = (input: unknown): input is Error => {
+  return !!input && typeof input === 'object' && 'error' in input && 'message' in input
+}

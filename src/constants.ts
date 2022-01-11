@@ -11,3 +11,8 @@ export const CHAIN_IDS: Record<Network, number> = {
   mainnet: 1,
   polygon: 137
 }
+
+export type APWToken = 'PT' | 'FYT' | 'Underlying'
+export type Pool = [APWToken, APWToken]
+export const pool1: Pool = ['PT', 'Underlying']
+export const pool2: Pool = ['PT', 'FYT']

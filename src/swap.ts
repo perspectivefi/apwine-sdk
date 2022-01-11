@@ -1,0 +1,122 @@
+import { FutureVault, FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
+import { BigNumber, BigNumberish, Signer } from 'ethers'
+
+import { APWToken, Network } from './constants'
+import { getAMMContract, getAMMRouterContract } from './contracts'
+import { error, isError } from './utils/general'
+import { findSwapPath } from './utils/swap'
+
+export type SwapOptions = {
+    slippageTolerance: number
+    autoApprove: boolean
+    deadline?: Date
+}
+
+export const defaultSwapOptions:SwapOptions = {
+  slippageTolerance: 5,
+  autoApprove: false,
+  deadline: undefined
+}
+
+export type SwapParams = {
+    from: APWToken
+    to: APWToken
+    amount:BigNumberish
+    future?: FutureVault
+}
+
+export type SwapParamsFull = SwapParams & {
+    signer?: Signer
+    network: Network
+}
+
+const approveSwap = async (signer: Signer, network: Network, user: string, token: APWToken, amount: BigNumberish, future?: FutureVault) => {
+  const amm = getAMMContract(signer, network)
+
+  const [ibtAddress, underlyingAddress] = await Promise.all([
+    amm.getIBTAddress(),
+    amm.getUnderlyingOfIBTAddress()
+  ])
+
+  switch (token) {
+    case 'FYT':
+      return future ? FutureYieldToken__factory.connect(future.address, signer).approve(user, amount) : error('NoFuture')
+    case 'PT':
+      return PT__factory.connect(ibtAddress, signer).approve(user, amount)
+
+    case 'Underlying':
+      return await IERC20__factory.connect(underlyingAddress, signer).approve(user, amount)
+    default:
+      return error('NoSuchToken')
+  }
+}
+
+export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull, options: SwapOptions) => {
+  const { signer, network, from, to, amount } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const amm = getAMMContract(signer, network)
+  const router = getAMMRouterContract(signer, network)
+  const user = await signer.getAddress()
+  const { poolPath, tokenPath } = findSwapPath(from, to)
+  const deadline = options.deadline?.getTime() ?? Date.now()
+
+  if (poolPath && tokenPath) {
+    const [tokenAmountIn, tokenAmountOut] = await Promise.all([
+      router.getAmountIn(amm.address, poolPath, tokenPath, amount),
+      router.getAmountOut(amm.address, poolPath, tokenPath, amount)
+    ])
+
+    const amountOut = tokenAmountIn.mul(100 + options.slippageTolerance).div(100)
+    const amountIn = tokenAmountOut.mul(100 - options.slippageTolerance).div(100)
+
+    return await direction === 'IN'
+      ? router.swapExactAmountIn(amm.address, poolPath, tokenPath, amount, amountOut, user, deadline)
+      : router.swapExactAmountOut(amm.address, poolPath, tokenPath, amount, amountIn, user, deadline)
+  }
+
+  return error('InvalidSwapRoute')
+}
+
+export const swapIn = async (params: SwapParamsFull, options: SwapOptions) => {
+  const { signer, network, amount, future } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const user = await signer.getAddress()
+
+  if (options.autoApprove) {
+    const result = await approveSwap(signer, network, user, params.from, amount, future)
+
+    if (isError(result)) {
+      return result
+    }
+  }
+
+  return swap('IN', params, options)
+}
+
+export const swapOut = async (params: SwapParamsFull, options: SwapOptions) => {
+  const { signer, network, amount, future } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
+
+  const user = await signer.getAddress()
+
+  if (options.autoApprove) {
+    const result = await approveSwap(signer, network, user, params.from, amount, future)
+
+    if (isError(result)) {
+      return result
+    }
+  }
+
+  return swap('OUT', params, options)
+}

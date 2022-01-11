@@ -7,7 +7,7 @@ import xprod from 'ramda/src/xprod'
 
 import { Network, PAIR_IDS, PairId } from './constants'
 import { getAMMContract } from './contracts'
-import { error } from './utils'
+import { error } from './utils/general'
 
 export const getLPTokenContract = (
   signerOrProvider: Signer | Provider,
