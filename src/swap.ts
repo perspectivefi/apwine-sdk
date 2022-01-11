@@ -8,15 +8,15 @@ import { findSwapPath } from './utils/swap'
 
 export type SwapOptions = {
     autoApprove: boolean
-    slippageTolerance: number
-    deadline?: Date
 }
 
 export type SwapParams = {
     from: APWToken
     to: APWToken
     amount:BigNumberish
+    slippageTolerance: number
     future?: FutureVault
+    deadline?: Date
 }
 
 export type SwapParamsFull = SwapParams & {
@@ -46,7 +46,7 @@ const approveSwap = async (signer: Signer, network: Network, user: string, token
 }
 
 export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull, options: SwapOptions) => {
-  const { signer, network, from, to, amount } = params
+  const { signer, network, from, to, amount, slippageTolerance, deadline } = params
 
   if (!signer) {
     return error('NoSigner')
@@ -56,7 +56,6 @@ export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull, opti
   const router = getAMMRouterContract(signer, network)
   const user = await signer.getAddress()
   const { poolPath, tokenPath } = findSwapPath(from, to)
-  const deadline = options.deadline?.getTime() ?? Date.now()
 
   if (poolPath && tokenPath) {
     const [tokenAmountIn, tokenAmountOut] = await Promise.all([
@@ -64,12 +63,12 @@ export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull, opti
       router.getAmountOut(amm.address, poolPath, tokenPath, amount)
     ])
 
-    const amountOut = tokenAmountIn.mul(100 + options.slippageTolerance).div(100)
-    const amountIn = tokenAmountOut.mul(100 - options.slippageTolerance).div(100)
+    const amountOut = tokenAmountIn.mul(100 + slippageTolerance).div(100)
+    const amountIn = tokenAmountOut.mul(100 - slippageTolerance).div(100)
 
     return await direction === 'IN'
-      ? router.swapExactAmountIn(amm.address, poolPath, tokenPath, amount, amountOut, user, deadline)
-      : router.swapExactAmountOut(amm.address, poolPath, tokenPath, amount, amountIn, user, deadline)
+      ? router.swapExactAmountIn(amm.address, poolPath, tokenPath, amount, amountOut, user, deadline?.getTime() ?? Date.now())
+      : router.swapExactAmountOut(amm.address, poolPath, tokenPath, amount, amountIn, user, deadline?.getTime() ?? Date.now())
   }
 
   return error('InvalidSwapRoute')

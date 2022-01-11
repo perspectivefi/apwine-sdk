@@ -28,6 +28,7 @@ import { fetchPTTokens } from './pt'
 import { fetchFYTTokens } from './fyt'
 import { findTokenPath } from './utils/swap'
 import { swapIn, SwapOptions, swapOut, SwapParams } from './swap'
+import { WithOptional } from './utils/general'
 
 type ConstructorProps = {
   network: Network
@@ -279,30 +280,32 @@ class APWineSDK {
 
   /**
    * Swap by contolling the exact amount of tokens passed in.
-   * @param params - SwapParams: from token, to token, amount, and an optional future.
-   * @param options - partial SwapOptions: automatic approval, slippageTolerance (1 - 100%), deadline date.
+   * @param params - SwapParams: from token, to token, amount, slippageTolerance (1 - 100%), deadline data, and an optional future.
+   * @param options - partial SwapOptions: automatic approval.
    * @returns - either an error object, or a ContractTransaction
    */
-  async swapIn(params: SwapParams, options: Partial<SwapOptions>) {
+  async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: SwapOptions = { autoApprove: false }) {
     return swapIn({
+      slippageTolerance: this.defaultSlippage,
       ...params,
       signer: this.signer,
       network: this.network
-    }, { slippageTolerance: this.defaultSlippage, autoApprove: false, ...options })
+    }, options)
   }
 
   /**
    * Swap by controlling the exact amount of tokens coming out.
-   * @param params - SwapParams: from token, to token, amount, and an optional future.
-   * @param options- partial SwapOptions: automatic approval, slippageTolerance (1 - 100%), deadline date.
+   * @param params - SwapParams: from token, to token, amount, slippageTolerance (1 - 100%), deadline data, and an optional future.
+   * @param options- partial SwapOptions: automatic approval.
    * @returns - either an error object, or a ContractTransaction
    */
-  async swapOut(params: SwapParams, options: Partial<SwapOptions>) {
+  async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: SwapOptions = { autoApprove: false }) {
     return swapOut({
+      slippageTolerance: this.defaultSlippage,
       ...params,
       signer: this.signer,
       network: this.network
-    }, { slippageTolerance: this.defaultSlippage, autoApprove: false, ...options })
+    }, options)
   }
 
   /**
