@@ -45,7 +45,7 @@ const approveSwap = async (signer: Signer, network: Network, user: string, token
   }
 }
 
-export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull, options: SwapOptions) => {
+export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull) => {
   const { signer, network, from, to, amount, slippageTolerance, deadline } = params
 
   if (!signer) {
@@ -91,7 +91,7 @@ export const swapIn = async (params: SwapParamsFull, options: SwapOptions) => {
     }
   }
 
-  return swap('IN', params, options)
+  return swap('IN', params)
 }
 
 export const swapOut = async (params: SwapParamsFull, options: SwapOptions) => {
@@ -111,5 +111,5 @@ export const swapOut = async (params: SwapParamsFull, options: SwapOptions) => {
     }
   }
 
-  return swap('OUT', params, options)
+  return swap('OUT', params)
 }
