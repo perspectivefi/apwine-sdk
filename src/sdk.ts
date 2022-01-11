@@ -27,13 +27,13 @@ import {
 import { fetchPTTokens } from './pt'
 import { fetchFYTTokens } from './fyt'
 import { findTokenPath } from './utils/swap'
-import { defaultSwapOptions, swap, swapIn, SwapOptions, swapOut, SwapParams } from './swap'
+import { swapIn, SwapOptions, swapOut, SwapParams } from './swap'
 
 type ConstructorProps = {
   network: Network
   provider: Provider
   signer?: Signer
-  defaultSlippage?: BigNumberish
+  defaultSlippage?: number
 }
 
 type ConstructorOptions = {
@@ -42,8 +42,7 @@ type ConstructorOptions = {
 
 class APWineSDK {
   ready: ReturnType<APWineSDK['initialize']> | boolean = false
-
-  defaultSlippage: BigNumberish
+  defaultSlippage: number
 
   network: Network
   provider: Provider
@@ -64,7 +63,7 @@ class APWineSDK {
    * @param param0{ConstructorProps} - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider, defaultSlippage = '0.05' }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
+  constructor({ network, signer, provider, defaultSlippage = 5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
     this.defaultSlippage = defaultSlippage
     this.network = network
@@ -126,7 +125,7 @@ class APWineSDK {
     this.signer = signer
   }
 
-  updateSlippageTolerance(slippage: BigNumberish) {
+  updateSlippageTolerance(slippage: number) {
     this.defaultSlippage = slippage
   }
 
@@ -278,26 +277,32 @@ class APWineSDK {
     return deposit(this.signer, this.network, future, amount)
   }
 
-  async swapIn(params: SwapParams, options?: SwapOptions) {
+  /**
+   * Swap by contolling the exact amount of tokens passed in.
+   * @param params - SwapParams: from token, to token, amount, and an optional future.
+   * @param options - partial SwapOptions: automatic approval, slippageTolerance (1 - 100%), deadline date.
+   * @returns - either an error object, or a ContractTransaction
+   */
+  async swapIn(params: SwapParams, options: Partial<SwapOptions>) {
     return swapIn({
       ...params,
       signer: this.signer,
       network: this.network
-    }, {
-      ...defaultSwapOptions,
-      ...options
-    })
+    }, { slippageTolerance: this.defaultSlippage, autoApprove: false, ...options })
   }
 
-  async swapOut(params: SwapParams, options?: SwapOptions) {
+  /**
+   * Swap by controlling the exact amount of tokens coming out.
+   * @param params - SwapParams: from token, to token, amount, and an optional future.
+   * @param options- partial SwapOptions: automatic approval, slippageTolerance (1 - 100%), deadline date.
+   * @returns - either an error object, or a ContractTransaction
+   */
+  async swapOut(params: SwapParams, options: Partial<SwapOptions>) {
     return swapOut({
       ...params,
       signer: this.signer,
       network: this.network
-    }, {
-      ...defaultSwapOptions,
-      ...options
-    })
+    }, { slippageTolerance: this.defaultSlippage, autoApprove: false, ...options })
   }
 
   /**

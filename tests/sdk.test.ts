@@ -65,7 +65,7 @@ describe('APWineSDK', () => {
   })
 
   it('swap', async () => {
-    const receipt = await sdk.swapIn({ from: 'Underlying', to: 'PT', amount: 1 }, { slippageTolerance: 5, autoApprove: true })
+    const receipt = await sdk.swapIn({ from: 'Underlying', to: 'PT', amount: 1 }, { autoApprove: true })
     console.log(receipt)
   })
 })

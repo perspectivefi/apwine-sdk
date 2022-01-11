@@ -1,5 +1,5 @@
 import { FutureVault, FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
-import { BigNumber, BigNumberish, Signer } from 'ethers'
+import { BigNumberish, Signer } from 'ethers'
 
 import { APWToken, Network } from './constants'
 import { getAMMContract, getAMMRouterContract } from './contracts'
@@ -7,15 +7,9 @@ import { error, isError } from './utils/general'
 import { findSwapPath } from './utils/swap'
 
 export type SwapOptions = {
-    slippageTolerance: number
     autoApprove: boolean
+    slippageTolerance: number
     deadline?: Date
-}
-
-export const defaultSwapOptions:SwapOptions = {
-  slippageTolerance: 5,
-  autoApprove: false,
-  deadline: undefined
 }
 
 export type SwapParams = {
