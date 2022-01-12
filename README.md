@@ -120,7 +120,7 @@ const sdk = new APWineSDK({
 
 // Fetch all future vaults, then inspect and withdraw from one
 
-if(sdk.ready){
+  await sdk.ready // ready signifies, that we loaded all asynchronous props, like the Controller, or the LP.
   const vaults = await sdk.fetchAllFutureVaults()
   const { 
     ibtAddress,
@@ -136,6 +136,21 @@ if(sdk.ready){
   const receipt = await sdk.withdraw(vaults[0], 1000)
 }
 
+// get swap information
+
+console.log(sdk.howToSwap('FYT', 'Underlying')) // ['FYT', 'PT', 'PT', 'Underlying']
+
+// swap some tokens
+
+const transaction = 
+    await sdk.swapIn({
+        from: 'FYT',
+        to: 'PT'
+        amount: 100
+        future: vault[0]
+        deadline: (new Date(Date.now() + 60 * 1000)).getTime()
+    }, { autoApprove: true })
+
 ```
 
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_
@@ -147,7 +162,8 @@ if(sdk.ready){
 <!-- ROADMAP -->
 ## Roadmap
 - [x] Add support for deposit & withdraw
-- [ ] Add support for tokenswaps
+- [x] Add support for tokenswaps
+- [ ] Do stuff
 
 See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
