@@ -152,7 +152,7 @@ const transaction =
     }, { autoApprove: true })
 
 ```
-
+#### For transactions you will need a signer, if you want to just read information, a provider is enough.
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_
  -->
 <p align="right">(<a href="#top">back to top</a>)</p>
