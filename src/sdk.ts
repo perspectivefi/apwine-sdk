@@ -277,7 +277,7 @@ class APWineSDK {
   }
 
   /**
-   * Swap by contolling the exact amount of tokens passed in.
+   * Swap by controlling the exact amount of tokens passed in.
    * @param params - SwapParams: from token, to token, amount, slippageTolerance (1 - 100%), deadline data, and an optional future.
    * @param options - partial SwapOptions: automatic approval.
    * @returns - either an error object, or a ContractTransaction
