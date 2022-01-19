@@ -1,8 +1,10 @@
-import { BytesLike } from 'ethers'
+import { BigNumberish, BytesLike, Signer } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
+import { AToken__factory } from '@apwine/protocol'
 import errors from '../errors.json'
+import { Error } from '..'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)
@@ -217,11 +219,18 @@ export function getAddress(address: string): string {
   return result
 }
 
-export const error = (type: keyof typeof errors, extraData?: any) => ({ error: type, message: errors[type], extraData })
-export type Error = ReturnType<typeof error>
+export const error = (type: keyof typeof errors): Error => ({ error: errors[type] })
 
 export const isError = (input: unknown): input is Error => {
-  return typeof input === 'object' && input !== null && 'error' in input && 'message' in input
+  return typeof input === 'object' && input !== null && 'error' in input
 }
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export const isApprovalNecessary = async (signer: Signer, spender: string, tokenAddress:string, amount: BigNumberish) => {
+  const token = AToken__factory.connect(tokenAddress, signer)
+
+  const allowance = await token.allowance(await signer.getAddress(), spender)
+
+  return allowance.lt(amount)
+}

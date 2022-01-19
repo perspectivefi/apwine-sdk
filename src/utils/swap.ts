@@ -1,4 +1,5 @@
 import { bidirectional, edgePathFromNodePath } from 'graphology-shortest-path'
+import { BigNumber } from 'ethers'
 import { PairId } from '..'
 import { APWToken } from '../constants'
 import pools from './pools'
@@ -22,7 +23,7 @@ export const findTokenPath = (from: APWToken, to: APWToken) => {
   }
 }
 
-export const findPoolPath = (shortestPath: string[] | null) => {
+export const findPoolPath = (shortestPath: string[] | null): number[] | null => {
   if (!shortestPath) {
     return null
   }
@@ -39,3 +40,6 @@ export const findSwapPath = (from: APWToken, to: APWToken) => {
     poolPath
   }
 }
+
+export const applySlippage = (n: BigNumber, slippagePercentage: number) =>
+  n.mul(10000 + slippagePercentage * 100).div(10000)

@@ -37,10 +37,10 @@
     ethers "^5.5.2"
     js-base64 "^3.7.2"
 
-"@apwine/amm@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@apwine/amm/-/amm-0.0.8.tgz#74395b82a8783821658998a7fd9ad2dbca3e7ff1"
-  integrity sha512-y7KYV79JSIcbZAHVf4k07gRrqg2hhBQQBOC6x0BKmiYmBmByQX0rmhIKiDQ/6d9S9cTaOlbZn+VNZTfsECY3rg==
+"@apwine/amm@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@apwine/amm/-/amm-0.0.9.tgz#949e9fbd6a6dd844f6f88b85a826733d8797754d"
+  integrity sha512-RI5zBdcQN3nwbLjCPOuj6+DRq0AYMiI+fXFEosNlknTNo55/rsegk1hE21c3B3JsXGHDQ1uML8rpiXwUgKcgPw==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/bytes" "^5.5.0"
@@ -48,10 +48,10 @@
     copyfiles "^2.4.1"
     ethers "^5.5.2"
 
-"@apwine/protocol@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@apwine/protocol/-/protocol-0.0.9.tgz#bf4c458bd6c3e5c6da6ad0dcd736af8b03f7f18b"
-  integrity sha512-Ca7wqimKHjBvFDzdQ5ECSWw2T3t6aVRJ9+RVUxQpkK907OeFyenpI0g04obFIscSAP7ODN1le5pxtDyzTN0evA==
+"@apwine/protocol@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@apwine/protocol/-/protocol-0.0.10.tgz#e369c4abab337ecb999ba15c083bda6d7c61c941"
+  integrity sha512-xrlKDsReghXPbk1fhwUCvpj7YzLmOhTISwLGa6/u0AqgoHZmxPrNs/W7kCgmDE6KbUgHeyQTbMA8Sh9DmM8ZJw==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/bytes" "^5.5.0"

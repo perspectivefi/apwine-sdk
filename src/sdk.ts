@@ -1,8 +1,8 @@
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
-import { Controller, FutureVault, FutureYieldToken, PT, Registry } from '@apwine/protocol'
-import { AMM, AMMRouter, LPToken } from '@apwine/amm'
+import { Controller, FutureVault, Registry } from '@apwine/protocol'
+import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
 import { Network, PairId, APWToken } from './constants'
 
 import {
@@ -15,19 +15,19 @@ import {
   fetchFutureToken,
   updateAllowance,
   approve,
-  fetchAllowance
+  fetchAllowance,
+  fetchAMMs
 } from './futures'
-import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, getLPTokenContract, isLPApprovedForAll } from './lp'
+import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll } from './lp'
 import {
-  getAMMContract,
+  getAMMRegistryContract,
   getAMMRouterContract,
   getControllerContract,
   getRegistryContract
 } from './contracts'
-import { fetchPTTokens } from './pt'
-import { fetchFYTTokens } from './fyt'
+
 import { findTokenPath } from './utils/swap'
-import { swapIn, SwapOptions, swapOut, SwapParams } from './swap'
+import { swap, SwapOptions, SwapParams } from './swap'
 import { WithOptional } from './utils/general'
 
 type ConstructorProps = {
@@ -49,14 +49,12 @@ class APWineSDK {
   provider: Provider
   signer?: Signer
 
-  AMM: AMM
+  AMMRegistry: AMMRegistry
   Registry: Registry
   Router: AMMRouter
 
   // async props
-  PTs: PT[] | null = null
-  FYTs: FutureYieldToken[] | null = null
-  LP: LPToken | null = null
+  AMMs: AMM[] = []
   Controller: Controller | null = null
 
   /**
@@ -64,7 +62,7 @@ class APWineSDK {
    * @param param0 - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider, defaultSlippage = 5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
+  constructor({ network, signer, provider, defaultSlippage = 0.5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
     this.defaultSlippage = defaultSlippage
     this.network = network
@@ -73,7 +71,7 @@ class APWineSDK {
       this.signer = signer
     }
 
-    this.AMM = getAMMContract(provider, network)
+    this.AMMRegistry = getAMMRegistryContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
     this.Router = getAMMRouterContract(provider, network)
 
@@ -91,11 +89,7 @@ class APWineSDK {
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
-      fetchPTTokens(this.provider, this.network).then((pts) => (this.PTs = pts)),
-      fetchFYTTokens(this.provider, this.network).then((fyts) => (this.FYTs = fyts)),
-      this.AMM.getPoolTokenAddress().then((lpTokenAddress) =>
-        (this.LP = getLPTokenContract(this.provider, lpTokenAddress))
-      )
+      fetchAMMs(this.provider, this.network).then((amms) => (this.AMMs = amms))
     ])
 
     this.ready = ready
@@ -126,6 +120,10 @@ class APWineSDK {
     this.signer = signer
   }
 
+  /**
+   * Set default slippage tolerance for the SDK instance.
+   * @param slippage - default slippage to be set.
+   */
   updateSlippageTolerance(slippage: number) {
     this.defaultSlippage = slippage
   }
@@ -285,7 +283,7 @@ class APWineSDK {
    * @returns - either an error object, or a ContractTransaction
    */
   async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: SwapOptions = { autoApprove: false }) {
-    return swapIn({
+    return swap('IN', {
       slippageTolerance: this.defaultSlippage,
       ...params,
       signer: this.signer,
@@ -300,7 +298,7 @@ class APWineSDK {
    * @returns - either an error object, or a ContractTransaction
    */
   async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: SwapOptions = { autoApprove: false }) {
-    return swapOut({
+    return swap('OUT', {
       slippageTolerance: this.defaultSlippage,
       ...params,
       signer: this.signer,

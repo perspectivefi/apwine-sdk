@@ -5,9 +5,10 @@ import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'
 
-import { Network, PAIR_IDS, PairId } from './constants'
+import { Network, PAIR_IDS, PairId, Transaction } from './constants'
 import { getAMMContract } from './contracts'
 import { error } from './utils/general'
+import { SDKFunctionReturnType } from '.'
 
 export const getLPTokenContract = (
   signerOrProvider: Signer | Provider,
@@ -23,14 +24,17 @@ export const isLPApprovedForAll = async (signerOrProvider: Signer | Provider, ne
   return token.isApprovedForAll(account, operator)
 }
 
-export const approveLPForAll = async (signer: Signer | undefined, network: Network, operator: string, approved:boolean) => {
+export const approveLPForAll = async (signer: Signer | undefined, network: Network, operator: string, approved:boolean): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
   const token = getLPTokenContract(signer, network)
+  const transaction = await token.setApprovalForAll(operator, approved)
 
-  return token.setApprovalForAll(operator, approved)
+  return {
+    transaction
+  }
 }
 
 export const addLiquidity = async (
@@ -40,7 +44,7 @@ export const addLiquidity = async (
   operator: string,
   pairId: PairId,
   poolAmountOut: BigNumberish,
-  maxAmountsIn: [BigNumberish, BigNumberish]) => {
+  maxAmountsIn: [BigNumberish, BigNumberish]): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
@@ -51,8 +55,9 @@ export const addLiquidity = async (
     return error('LPAddNotApproved')
   }
   const amm = getAMMContract(signer, network)
+  const transaction = await amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
 
-  return amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  return { transaction }
 }
 
 export const removeLiquidity = async (
@@ -62,7 +67,7 @@ export const removeLiquidity = async (
   operator: string,
   pairId: PairId,
   poolAmountOut: BigNumberish,
-  maxAmountsIn: [BigNumberish, BigNumberish]) => {
+  maxAmountsIn: [BigNumberish, BigNumberish]): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
@@ -74,8 +79,9 @@ export const removeLiquidity = async (
   }
 
   const amm = getAMMContract(signer, network)
+  const transaction = await amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
 
-  return amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  return { transaction }
 }
 
 export const fetchLPTokenPool = async (

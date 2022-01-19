@@ -1,16 +1,19 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
+import { AToken, AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
+import { AMM__factory } from '@apwine/amm'
 import {
   getAMMContract,
+  getAMMRegistryContract,
   getControllerContract,
   getFutureVaultContract,
   getRegistryContract
 } from './contracts'
 import { error, getAddress } from './utils/general'
 import { CHAIN_IDS, Network } from './constants'
+import { SDKFunctionReturnType, Transaction } from '.'
 
 export const fetchFutureAggregateFromIndex = async (
   network: Network,
@@ -99,22 +102,32 @@ export const fetchAllFutureVaults = async (
   )
 }
 
+export const fetchAMMs = async (signerOrProvider: Signer | Provider, network: Network) => {
+  const ammRegistry = getAMMRegistryContract(signerOrProvider, network)
+  const vaults = await fetchAllFutureVaults(signerOrProvider, network)
+
+  const ammAddresses = await Promise.all(vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address)))
+
+  return ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider))
+}
+
 export const withdraw = async (
   signer: Signer | undefined,
   network: Network,
   future: FutureVault,
   amount: BigNumberish
-) => {
+): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
   const controller = await getControllerContract(signer, network)
+  const transaction = await controller.withdraw(future.address, amount)
 
-  return controller.withdraw(future.address, amount)
+  return { transaction }
 }
 
-export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault) => {
+export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault): Promise<SDKFunctionReturnType<AToken>> => {
   const ibtAddress = await future.getIBTAddress()
 
   return AToken__factory.connect(ibtAddress, signerOrProvider)
@@ -139,7 +152,7 @@ export const fetchAllowance = async (signerOrProvider: Signer | Provider, networ
   return new TokenAmount(token, allowance.toBigInt())
 }
 
-export const updateAllowance = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish) => {
+export const updateAllowance = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
@@ -147,11 +160,13 @@ export const updateAllowance = async (signer: Signer | undefined, spender: strin
   const token = await fetchFutureToken(signer, future)
   const bignumberAmount = BigNumber.from(amount)
 
-  if (bignumberAmount.isNegative()) {
-    return token.decreaseAllowance(spender, bignumberAmount)
-  }
+  const transaction = await (bignumberAmount.isNegative()
+    ? token.decreaseAllowance(spender, bignumberAmount)
+    : token.increaseAllowance(spender, bignumberAmount.abs()))
 
-  return token.increaseAllowance(spender, bignumberAmount.abs())
+  return {
+    transaction
+  }
 }
 
 export const deposit = async (
@@ -159,13 +174,14 @@ export const deposit = async (
   network: Network,
   future: FutureVault,
   amount: BigNumberish
-
-) => {
+): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
   const controller = await getControllerContract(signer, network)
 
-  return controller.deposit(future.address, amount)
+  const transaction = await controller.deposit(future.address, amount)
+
+  return { transaction }
 }

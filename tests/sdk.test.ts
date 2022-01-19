@@ -1,47 +1,41 @@
 import path from 'path'
 import dotenv from 'dotenv'
-import { ethers, providers, Signer } from 'ethers'
-import { AlchemyProvider } from '@ethersproject/providers'
-import { SigningKey } from 'ethers/lib/utils'
+import { ContractTransaction, ethers, providers, Signer } from 'ethers'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { AToken__factory } from '@apwine/protocol'
+import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 
 describe('APWineSDK', () => {
-  let alchemyProvider: AlchemyProvider, signer: Signer, sdk: APWineSDK
+  let provider: JsonRpcProvider, signer: Signer, sdk: APWineSDK
 
   beforeAll(() => {
     dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
     // url = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`
-    alchemyProvider = new providers.AlchemyProvider(
-      'kovan',
-      process.env.ALCHEMY_API_KEY
+    provider = new providers.JsonRpcProvider(
+      `https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`,
+      'mainnet'
     )
 
-    signer = new ethers.Wallet(
-      (process.env.PRIVATE_KEY as unknown) as SigningKey,
-      alchemyProvider
-    )
+    signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
   })
 
   beforeEach(() => {
     sdk = new APWineSDK({
-      provider: alchemyProvider,
+      provider,
       signer,
-      network: 'kovan'
+      network: 'mainnet'
 
     })
   })
 
   it('should have the network set', async () => {
-    expect(sdk.network).toBe('kovan')
+    expect(sdk.network).toBe('mainnet')
   })
 
   it('should have the signer or provider set', async () => {
     expect(sdk.provider).toBeDefined()
-  })
-
-  it('should have the amm instance set', async () => {
-    expect(sdk.AMM).toBeDefined()
   })
 
   it('should have the registry instance set', async () => {
@@ -54,18 +48,29 @@ describe('APWineSDK', () => {
     expect(sdk.Controller).toBeDefined()
   })
 
-  it('should  have the LPToken contract instance set after asyncProps are loaded', async () => {
-    expect(sdk.LP).toBeNull()
-    await sdk.ready
-    expect(sdk.LP).toBeDefined()
-  })
-
   it('should be able to tell how to swap tokens', () => {
     expect(sdk.howToSwap('Underlying', 'FYT')).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
   })
 
-  it('swap', async () => {
-    const receipt = await sdk.swapIn({ from: 'Underlying', to: 'PT', amount: 1 }, { autoApprove: true })
-    console.log(receipt)
+  it('AMMs should be loaded eventually', async () => {
+    await sdk.ready
+
+    expect(sdk.AMMs.map((amm) => amm.address)).toEqual([
+      '0x8A362AA1c81ED0Ee2Ae677A8b59e0f563DD290Ba',
+      '0xc61C0F4961F2093A083f47a4b783ad260DeAF7eA',
+      '0x1604C5e9aB488D66E983644355511DCEF5c32EDF',
+      '0xA4085c106c7a9A7AD0574865bbd7CaC5E1098195',
+      '0x0CC36e3cc5eACA6d046b537703ae946874d57299'
+    ])
+  })
+
+  it('AMMs should be loaded eventually', async () => {
+    await sdk.ready
+
+    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true }) as ContractTransaction
+
+    await swap.wait()
+
+    console.log(swap)
   })
 })
