@@ -1,7 +1,9 @@
 import path from 'path'
 import dotenv from 'dotenv'
-import { providers, Signer } from 'ethers'
+import { ContractTransaction, ethers, providers, Signer } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { AToken__factory } from '@apwine/protocol'
+import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 
 describe('APWineSDK', () => {
@@ -16,7 +18,7 @@ describe('APWineSDK', () => {
       'mainnet'
     )
 
-    signer = provider.getSigner()
+    signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
   })
 
   beforeEach(() => {
@@ -36,10 +38,6 @@ describe('APWineSDK', () => {
     expect(sdk.provider).toBeDefined()
   })
 
-  it('should have the amm instance set', async () => {
-    expect(sdk.AMM).toBeDefined()
-  })
-
   it('should have the registry instance set', async () => {
     expect(sdk.Registry).toBeDefined()
   })
@@ -54,11 +52,25 @@ describe('APWineSDK', () => {
     expect(sdk.howToSwap('Underlying', 'FYT')).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
   })
 
-  it('load vaults', async () => {
+  it('AMMs should be loaded eventually', async () => {
     await sdk.ready
 
-    const vaults = await sdk.fetchAllFutureVaults()
+    expect(sdk.AMMs.map((amm) => amm.address)).toEqual([
+      '0x8A362AA1c81ED0Ee2Ae677A8b59e0f563DD290Ba',
+      '0xc61C0F4961F2093A083f47a4b783ad260DeAF7eA',
+      '0x1604C5e9aB488D66E983644355511DCEF5c32EDF',
+      '0xA4085c106c7a9A7AD0574865bbd7CaC5E1098195',
+      '0x0CC36e3cc5eACA6d046b537703ae946874d57299'
+    ])
+  })
 
-    console.log(vaults)
+  it('AMMs should be loaded eventually', async () => {
+    await sdk.ready
+
+    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true }) as ContractTransaction
+
+    await swap.wait()
+
+    console.log(swap)
   })
 })

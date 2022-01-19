@@ -23,7 +23,7 @@ export const getAMMContract = (
   signerOrProvider: Signer | Provider,
   network: Network
 ) =>
-  AMM__factory.connect(config.networks[network].AMM_ADDRESS, signerOrProvider)
+  AMM__factory.connect(config.networks[network].AMM_REGISTRY, signerOrProvider)
 
 export const getAMMRouterContract = (
   signerOrProvider: Signer | Provider,
@@ -31,8 +31,8 @@ export const getAMMRouterContract = (
 ) =>
   AMMRouter__factory.connect(config.networks[network].AMM_ROUTER, signerOrProvider)
 
-export const getAMMRegistryContract = async (signerOrProvider: Signer | Provider, network: Network) =>
-  AMMRegistry__factory.connect(await getAMMRouterContract(signerOrProvider, network).registry(), signerOrProvider)
+export const getAMMRegistryContract = (signerOrProvider: Signer | Provider, network: Network) =>
+  AMMRegistry__factory.connect(config.networks[network].AMM_REGISTRY, signerOrProvider)
 
 export const getControllerContract = async (
   signerOrProvider: Signer | Provider,
