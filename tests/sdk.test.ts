@@ -5,6 +5,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { AToken__factory } from '@apwine/protocol'
 import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
+import { getTokencontract } from '../src/contracts'
 
 describe('APWineSDK', () => {
   let provider: JsonRpcProvider, signer: Signer, sdk: APWineSDK
@@ -64,13 +65,18 @@ describe('APWineSDK', () => {
     ])
   })
 
-  it('AMMs should be loaded eventually', async () => {
+  it('Should be able to swap', async () => {
     await sdk.ready
 
-    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true }) as ContractTransaction
+    const ptAddress = await sdk.AMMs[0].getPTAddress()
+    const balance = await getTokencontract(sdk.provider, ptAddress).balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')
 
-    await swap.wait()
+    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true })
 
-    console.log(swap)
+    await swap.transaction?.wait()
+
+    const newBalance = await getTokencontract(sdk.provider, ptAddress).balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')
+
+    expect(balance.gt(newBalance)).toBe(true)
   })
 })

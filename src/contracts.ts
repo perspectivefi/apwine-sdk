@@ -1,4 +1,5 @@
 import {
+  AToken__factory,
   Controller__factory,
   FutureVault__factory,
   Registry__factory
@@ -24,6 +25,9 @@ export const getAMMContract = (
   network: Network
 ) =>
   AMM__factory.connect(config.networks[network].AMM_REGISTRY, signerOrProvider)
+
+export const getTokencontract = (signerOrProvider: Signer | Provider, tokenAddress: string) =>
+  AToken__factory.connect(tokenAddress, signerOrProvider)
 
 export const getAMMRouterContract = (
   signerOrProvider: Signer | Provider,

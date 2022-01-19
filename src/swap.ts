@@ -18,7 +18,6 @@ export type SwapParams = {
     to: APWToken
     amount:BigNumberish
     slippageTolerance: number
-    future?: FutureVault
     deadline?: Date
 }
 
@@ -27,7 +26,7 @@ export type SwapParamsFull = SwapParams & {
     network: Network
 }
 
-const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: APWToken, amount: BigNumberish, future?: FutureVault) => {
+const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: APWToken, amount: BigNumberish) => {
   const [ptAddress, underlyingAddress, fytAddress] = await Promise.all([
     amm.getPTAddress(),
     amm.getUnderlyingOfIBTAddress(),
@@ -43,10 +42,6 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
   }
 
   if (token === 'Underlying') {
-    if (!future) {
-      return error('NoFuture')
-    }
-
     const needsApproval = await isApprovalNecessary(signer, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
 
     return needsApproval && IERC20__factory.connect(underlyingAddress, signer).approve(spender, amount)
@@ -62,7 +57,7 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
 }
 
 export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, options: SwapOptions): Promise<SDKFunctionReturnType<Transaction>> => {
-  const { signer, network, amm, from, to, amount: rawAmount, slippageTolerance, deadline, future } = params
+  const { signer, network, amm, from, to, amount: rawAmount, slippageTolerance, deadline } = params
   const amount = BigNumber.from(rawAmount)
 
   if (!signer) {
@@ -89,8 +84,8 @@ export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, optio
 
     if (options.autoApprove) {
       await (swapType === 'IN'
-        ? approveSwap(signer, network, amm, from, amount, future)
-        : approveSwap(signer, network, amm, from, tokenAmountWithSlippage, future))
+        ? approveSwap(signer, network, amm, from, amount)
+        : approveSwap(signer, network, amm, from, tokenAmountWithSlippage))
     }
 
     const swap = swapType === 'IN' ? router.swapExactAmountIn : router.swapExactAmountOut
