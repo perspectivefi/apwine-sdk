@@ -90,6 +90,10 @@ export const fetchAllFutureVaults = async (
   const registry = getRegistryContract(signerOrProvider, network)
   const count = (await registry.futureVaultCount()).toNumber()
 
+  const controller = await getControllerContract(signerOrProvider, network)
+
+  // await controller.getFuturesWithDuration()
+
   const futureVaultAddresses = await Promise.all(
     range(0, count).map(index => registry.getFutureVaultAt(index))
   )

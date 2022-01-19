@@ -22,7 +22,7 @@ export const findTokenPath = (from: APWToken, to: APWToken) => {
   }
 }
 
-export const findPoolPath = (shortestPath: string[] | null) => {
+export const findPoolPath = (shortestPath: string[] | null): number[] | null => {
   if (!shortestPath) {
     return null
   }

@@ -54,9 +54,6 @@ class APWineSDK {
   Router: AMMRouter
 
   // async props
-  PTs: PT[] | null = null
-  FYTs: FutureYieldToken[] | null = null
-  LP: LPToken | null = null
   Controller: Controller | null = null
 
   /**
@@ -90,11 +87,6 @@ class APWineSDK {
     const ready = Promise.all([
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
-      ),
-      fetchPTTokens(this.provider, this.network).then((pts) => (this.PTs = pts)),
-      fetchFYTTokens(this.provider, this.network).then((fyts) => (this.FYTs = fyts)),
-      this.AMM.getPoolTokenAddress().then((lpTokenAddress) =>
-        (this.LP = getLPTokenContract(this.provider, lpTokenAddress))
       )
     ])
 
@@ -126,6 +118,10 @@ class APWineSDK {
     this.signer = signer
   }
 
+  /**
+   * Set default slippage tolerance for the SDK instance.
+   * @param slippage - default slippage to be set.
+   */
   updateSlippageTolerance(slippage: number) {
     this.defaultSlippage = slippage
   }

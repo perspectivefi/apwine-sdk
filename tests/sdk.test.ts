@@ -1,39 +1,35 @@
 import path from 'path'
 import dotenv from 'dotenv'
-import { ethers, providers, Signer } from 'ethers'
-import { AlchemyProvider } from '@ethersproject/providers'
-import { SigningKey } from 'ethers/lib/utils'
+import { providers, Signer } from 'ethers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import APWineSDK from '../src/sdk'
 
 describe('APWineSDK', () => {
-  let alchemyProvider: AlchemyProvider, signer: Signer, sdk: APWineSDK
+  let provider: JsonRpcProvider, signer: Signer, sdk: APWineSDK
 
   beforeAll(() => {
     dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
     // url = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`
-    alchemyProvider = new providers.AlchemyProvider(
-      'kovan',
-      process.env.ALCHEMY_API_KEY
+    provider = new providers.JsonRpcProvider(
+      `https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`,
+      'mainnet'
     )
 
-    signer = new ethers.Wallet(
-      (process.env.PRIVATE_KEY as unknown) as SigningKey,
-      alchemyProvider
-    )
+    signer = provider.getSigner()
   })
 
   beforeEach(() => {
     sdk = new APWineSDK({
-      provider: alchemyProvider,
+      provider,
       signer,
-      network: 'kovan'
+      network: 'mainnet'
 
     })
   })
 
   it('should have the network set', async () => {
-    expect(sdk.network).toBe('kovan')
+    expect(sdk.network).toBe('mainnet')
   })
 
   it('should have the signer or provider set', async () => {
@@ -54,18 +50,15 @@ describe('APWineSDK', () => {
     expect(sdk.Controller).toBeDefined()
   })
 
-  it('should  have the LPToken contract instance set after asyncProps are loaded', async () => {
-    expect(sdk.LP).toBeNull()
-    await sdk.ready
-    expect(sdk.LP).toBeDefined()
-  })
-
   it('should be able to tell how to swap tokens', () => {
     expect(sdk.howToSwap('Underlying', 'FYT')).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
   })
 
-  it('swap', async () => {
-    const receipt = await sdk.swapIn({ from: 'Underlying', to: 'PT', amount: 1 }, { autoApprove: true })
-    console.log(receipt)
+  it('load vaults', async () => {
+    await sdk.ready
+
+    const vaults = await sdk.fetchAllFutureVaults()
+
+    console.log(vaults)
   })
 })

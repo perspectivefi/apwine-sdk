@@ -58,10 +58,8 @@ export const swap = async (direction: 'IN' | 'OUT', params: SwapParamsFull) => {
   const { poolPath, tokenPath } = findSwapPath(from, to)
 
   if (poolPath && tokenPath) {
-    const [tokenAmountIn, tokenAmountOut] = await Promise.all([
-      router.getAmountIn(amm.address, poolPath, tokenPath, amount),
-      router.getAmountOut(amm.address, poolPath, tokenPath, amount)
-    ])
+    const tokenAmountIn = await router.getAmountIn(amm.address, poolPath, tokenPath, amount)
+    const tokenAmountOut = await router.getAmountOut(amm.address, poolPath, tokenPath, amount)
 
     if (slippageTolerance > 100 || slippageTolerance < 1) {
       return error('FaultySlippage')
@@ -89,6 +87,8 @@ export const swapIn = async (params: SwapParamsFull, options: SwapOptions) => {
 
   if (options.autoApprove) {
     const result = await approveSwap(signer, network, user, params.from, amount, future)
+
+    console.log(result)
 
     if (isError(result)) {
       return result
