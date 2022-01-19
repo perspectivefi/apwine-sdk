@@ -127,20 +127,20 @@ export const withdraw = async (
   return { transaction }
 }
 
-export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault): Promise<SDKFunctionReturnType<AToken>> => {
+export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault) => {
   const ibtAddress = await future.getIBTAddress()
 
   return AToken__factory.connect(ibtAddress, signerOrProvider)
 }
 
-export const approve = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish) => {
+export const approve = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
   const token = await fetchFutureToken(signer, future)
-
-  return token.approve(spender, amount)
+  const transaction = await token.approve(spender, amount)
+  return { transaction }
 }
 
 export const fetchAllowance = async (signerOrProvider: Signer | Provider, network: Network, owner: string, spender: string, future: FutureVault) => {
