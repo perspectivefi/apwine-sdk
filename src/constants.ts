@@ -1,8 +1,13 @@
-import { ContractTransaction } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import { ContractTransaction, Signer } from 'ethers'
 import config from './config.json'
 
 export type Error = {
   error?: string
+}
+
+export type Options = {
+  autoApprove?: boolean
 }
 
 // Time constants
@@ -18,13 +23,25 @@ export type PairId = typeof PAIR_IDS[number]
 export type Network = keyof typeof config.networks
 export const NETWORKS = Object.keys(config.networks) as Network[]
 
+export type DefaultParams = {
+  signerOrProvider: Signer | Provider
+  network: Network
+}
+
+export type DefaultTransactionParams ={
+  signer?: Signer
+  network: Network
+}
+
 export const CHAIN_IDS: Record<Network, number> = {
   kovan: 42,
   mainnet: 1,
   polygon: 137
 }
 
-export type APWToken = 'PT' | 'FYT' | 'Underlying'
+export const apwTokens = ['PT', 'Underlying', 'FYT'] as const
+
+export type APWToken = typeof apwTokens[number]
 export type Pool = [APWToken, APWToken]
 export const pool1: Pool = ['PT', 'Underlying']
 export const pool2: Pool = ['PT', 'FYT']

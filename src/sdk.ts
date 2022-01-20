@@ -15,9 +15,10 @@ import {
   updateAllowance,
   approve,
   fetchAllowance,
-  fetchAMMs
+  fetchAMMs,
+  getPoolTokens
 } from './futures'
-import { addLiquidity, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity } from './lp'
+import { addLiquidity, AddLiquidityParams, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity, RemoveLiquidityParams } from './lp'
 import {
   getAMMRegistryContract,
   getAMMRouterContract,
@@ -28,6 +29,7 @@ import {
 import { findPoolPath, findTokenPath } from './utils/swap'
 import { swap, SwapOptions, SwapParams } from './swap'
 import { WithOptional } from './utils/general'
+import { Options } from '.'
 
 type ConstructorProps = {
   network: Network
@@ -88,7 +90,7 @@ class APWineSDK {
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
-      fetchAMMs(this.provider, this.network).then((amms) => (this.AMMs = amms))
+      fetchAMMs(this.signer, this.network).then((amms) => (this.AMMs = amms))
     ])
 
     this.ready = ready
@@ -205,7 +207,7 @@ class APWineSDK {
 
   /**
    * Fetch an aggregated construct of an LPTokenPool
-   * @param pairId - pair id of the tokenPair, 0 or 1
+   * @param pairId - The pair id of the token pair, 0 or 1.
    * @param periodIndex anything from 0 to the current period index. Default is the current period.
    * @returns - An aggregated construct with LPTokenPool related data.
    */
@@ -224,14 +226,14 @@ class APWineSDK {
   /**
    * Add liqidity for the target AMM for a user.
    * @param amm - The AMM to add liquidity to.
-   * @param pairId - pair id of the tokenPair, 0 or 1.
+   * @param pairId - The pair id of the token pair, 0 or 1.
    * @param poolAmountIn - amount of liquidity points to be added for the token pair.
    * @param maxAmountsOut - maximum amount to be taken from the token pair.
    * @param account - optional user account, signer.getAddress is the default.
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
-  async addLiquidity(amm:AMM, pairId: PairId, poolAmountIn: BigNumberish, maxAmountsOut: [BigNumberish, BigNumberish], account?: string) {
-    return addLiquidity(this.signer, this.network, amm, pairId, poolAmountIn, maxAmountsOut, account)
+  async addLiquidity(params: AddLiquidityParams, options?: Options) {
+    return addLiquidity({ signer: this.signer, network: this.network, ...params }, options)
   }
 
   /**
@@ -243,8 +245,8 @@ class APWineSDK {
    * @param account - optional user account, signer.getAddress is the default.
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
-  async removeLiquidity(amm:AMM, pairId: PairId, poolAmountOut: BigNumberish, maxAmountsIn: [BigNumberish, BigNumberish], account?: string) {
-    return removeLiquidity(this.signer, this.network, amm, pairId, poolAmountOut, maxAmountsIn, account)
+  async removeLiquidity(params: RemoveLiquidityParams, options?: Options) {
+    return removeLiquidity({ signer: this.signer, network: this.network, ...params }, options)
   }
 
   /**
@@ -338,6 +340,16 @@ class APWineSDK {
       namedTokenPath,
       visual: graphSearchResult?.join('->')
     }
+  }
+
+  /**
+ * Get the token pair as contracts from a target AMM
+ * @param amm - The target AMM
+ * @param pairId - The pair id of the token pair, 0 or 1
+ * @returns - An array of PT | Underlying | FYT instance pairs.
+ */
+  async getPoolTokens(amm:AMM, pairId: PairId) {
+    return getPoolTokens(this.provider, amm, pairId)
   }
 }
 

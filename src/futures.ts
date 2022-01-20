@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
+import { AToken__factory, FutureVault, FutureVault__factory, FutureYieldToken, FutureYieldToken__factory, IERC20, IERC20__factory, PT, PT__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
@@ -13,7 +13,8 @@ import {
 } from './contracts'
 import { error, getAddress } from './utils/general'
 import { CHAIN_IDS, Network } from './constants'
-import { SDKFunctionReturnType, Transaction } from '.'
+import pools from './utils/pools'
+import { APWToken, PairId, SDKFunctionReturnType, Transaction } from '.'
 
 export const fetchFutureAggregateFromIndex = async (
   network: Network,
@@ -101,13 +102,16 @@ export const fetchAllFutureVaults = async (
   )
 }
 
-export const fetchAMMs = async (signerOrProvider: Signer | Provider, network: Network) => {
-  const ammRegistry = getAMMRegistryContract(signerOrProvider, network)
-  const vaults = await fetchAllFutureVaults(signerOrProvider, network)
+export const fetchAMMs = async (signer: Signer | undefined, network: Network) => {
+  if (!signer) {
+    return []
+  }
+  const ammRegistry = getAMMRegistryContract(signer, network)
+  const vaults = await fetchAllFutureVaults(signer, network)
 
   const ammAddresses = await Promise.all(vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address)))
 
-  return ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider))
+  return ammAddresses.map((address) => AMM__factory.connect(address, signer))
 }
 
 export const withdraw = async (
@@ -178,4 +182,28 @@ export const deposit = async (
   const transaction = await controller.deposit(future.address, amount)
 
   return { transaction }
+}
+
+export const getPoolTokens = async (signerOrProvider: Signer | Provider, amm: AMM, pairId: PairId) => {
+  const [ptAddress, underlyingAddress, fytAddress] = await Promise.all([
+    amm.getPTAddress(),
+    amm.getUnderlyingOfIBTAddress(),
+    amm.getFYTAddress()
+  ])
+
+  const tokens = {
+    PT: PT__factory.connect(ptAddress, signerOrProvider),
+    Underlying: IERC20__factory.connect(underlyingAddress, signerOrProvider),
+    FYT: FutureYieldToken__factory.connect(fytAddress, signerOrProvider)
+  }
+
+  const pool = pools.findEdge((edge) => pools.getEdgeAttributes(edge).pair === pairId)
+
+  const token1 = pools.source(pool) as APWToken
+  const token2 = pools.target(pool) as APWToken
+
+  return [
+    tokens[token1],
+    tokens[token2]
+  ]
 }

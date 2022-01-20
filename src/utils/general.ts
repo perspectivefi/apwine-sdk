@@ -4,7 +4,7 @@ import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
 import { AToken__factory } from '@apwine/protocol'
 import errors from '../errors.json'
-import { Error } from '..'
+import { Error } from '../constants'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)

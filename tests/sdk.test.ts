@@ -104,4 +104,11 @@ describe('APWineSDK', () => {
 
     expect(balance.gt(newBalance)).toBe(true)
   })
+
+  it.only('', async() => {
+    await sdk.ready
+    const rem = await sdk.removeLiquidity({ amm: sdk.AMMs[0], pairId: 0, poolAmountOut: 100, maxAmountsIn: [100, 100] })
+
+    console.log(rem)
+  })
 })

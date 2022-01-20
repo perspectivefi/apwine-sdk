@@ -6,8 +6,9 @@ import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'
 
 import { Network, PAIR_IDS, PairId, Transaction } from './constants'
-import { error } from './utils/general'
-import { SDKFunctionReturnType } from '.'
+import { error, isApprovalNecessary } from './utils/general'
+import { getPoolTokens } from './futures'
+import { DefaultTransactionParams, Options, SDKFunctionReturnType } from '.'
 
 export const getLPTokenContract = (
   signerOrProvider: Signer | Provider,
@@ -36,50 +37,67 @@ export const approveLPForAll = async (signer: Signer | undefined, network: Netwo
   }
 }
 
-export const addLiquidity = async (
-  signer: Signer | undefined,
-  network:Network,
+export type AddLiquidityParams = {
   amm: AMM,
   pairId: PairId,
   poolAmountOut: BigNumberish,
   maxAmountsIn: [BigNumberish, BigNumberish],
-  account?: string
-): Promise<SDKFunctionReturnType<Transaction>> => {
+}
+
+export const addLiquidity = async (params: AddLiquidityParams & DefaultTransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
+  const { signer, amm, pairId, poolAmountOut, maxAmountsIn } = params
+
   if (!signer) {
     return error('NoSigner')
   }
+  const [token1, token2] = await getPoolTokens(signer, amm, pairId)
 
-  const isApproved = await isLPApprovedForAll(signer, network, account ?? await signer.getAddress(), amm.address)
+  if (options.autoApprove) {
+    const [maxAmountT1, maxAmountT2] = maxAmountsIn
 
-  if (!isApproved) {
-    return error('LPAddNotApproved')
+    const needsApprovalForT1 = await isApprovalNecessary(signer, amm.address, token1.address, maxAmountT1)
+    const needsApprovalForT2 = await isApprovalNecessary(signer, amm.address, token2.address, maxAmountT2)
+
+    if (needsApprovalForT1) {
+      await token1.approve(amm.address, maxAmountT1)
+    }
+
+    if (needsApprovalForT2) {
+      await token2.approve(amm.address, maxAmountT2)
+    }
   }
+
   const transaction = await amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
 
   return { transaction }
 }
 
-export const removeLiquidity = async (
-  signer: Signer | undefined,
-  network:Network,
+export type RemoveLiquidityParams = {
   amm: AMM,
   pairId: PairId,
   poolAmountOut: BigNumberish,
   maxAmountsIn: [BigNumberish, BigNumberish],
   account?: string
+}
 
-): Promise<SDKFunctionReturnType<Transaction>> => {
+export const removeLiquidity = async (params: RemoveLiquidityParams & DefaultTransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
+  const { signer, network, amm, pairId, poolAmountOut, maxAmountsIn } = params
+
   if (!signer) {
     return error('NoSigner')
   }
 
-  const isApproved = await isLPApprovedForAll(signer, network, account ?? await signer.getAddress(), amm.address)
+  const user = await signer?.getAddress()
 
-  if (!isApproved) {
-    return error('LPRemovalNotApproved')
+  if (options.autoApprove) {
+    const isApproved = await isLPApprovedForAll(signer, network, user, amm.address)
+
+    if (!isApproved) {
+      await approveLPForAll(signer, network, amm.address, true)
+    }
   }
 
-  const transaction = await amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  const transaction = await amm.removeLiquidity(pairId, poolAmountOut, maxAmountsIn, { from: user })
 
   return { transaction }
 }
