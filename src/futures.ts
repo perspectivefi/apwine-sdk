@@ -8,7 +8,8 @@ import {
   getAMMRegistryContract,
   getControllerContract,
   getFutureVaultContract,
-  getRegistryContract
+  getRegistryContract,
+  getTokencontract
 } from './contracts'
 import { error, getAddress } from './utils/general'
 import { CHAIN_IDS, Network } from './constants'
@@ -125,24 +126,19 @@ export const withdraw = async (
   return { transaction }
 }
 
-export const fetchFutureToken = async (signerOrProvider: Signer | Provider, future: FutureVault) => {
-  const ibtAddress = await future.getIBTAddress()
-
-  return AToken__factory.connect(ibtAddress, signerOrProvider)
-}
-
-export const approve = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+export const approve = async (signer: Signer | undefined, spender: string, tokenAddress:string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
-  const token = await fetchFutureToken(signer, future)
+  const token = getTokencontract(signer, tokenAddress)
   const transaction = await token.approve(spender, amount)
+
   return { transaction }
 }
 
-export const fetchAllowance = async (signerOrProvider: Signer | Provider, network: Network, owner: string, spender: string, future: FutureVault) => {
-  const t = await fetchFutureToken(signerOrProvider, future)
+export const fetchAllowance = async (signerOrProvider: Signer | Provider, network: Network, owner: string, spender: string, tokenAddress: string) => {
+  const t = getTokencontract(signerOrProvider, tokenAddress)
   const allowance = await t.allowance(owner, spender)
   const decimals = await t.decimals()
   const token = new Token(CHAIN_IDS[network], t.address, decimals)
@@ -150,12 +146,12 @@ export const fetchAllowance = async (signerOrProvider: Signer | Provider, networ
   return new TokenAmount(token, allowance.toBigInt())
 }
 
-export const updateAllowance = async (signer: Signer | undefined, spender: string, future: FutureVault, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+export const updateAllowance = async (signer: Signer | undefined, spender: string, tokenAddress: string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
-  const token = await fetchFutureToken(signer, future)
+  const token = getTokencontract(signer, tokenAddress)
   const bignumberAmount = BigNumber.from(amount)
 
   const transaction = await (bignumberAmount.isNegative()

@@ -12,7 +12,6 @@ import {
   fetchFutureAggregateFromIndex,
   fetchFutureAggregateFromAddress,
   withdraw,
-  fetchFutureToken,
   updateAllowance,
   approve,
   fetchAllowance,
@@ -131,23 +130,23 @@ class APWineSDK {
   /**
    * Approve transactions for a token amount on the target future vault.
    * @param spender - The contract/entity receiving approval for spend.
+   * @param tokenAddress - The address of the token contract.
    * @param amount - The amount of tokens to be approved.
-
    * @returns - Either an error, or a transaction receipt.
    */
-  async approve(spender: string, future: FutureVault, amount: BigNumberish) {
-    return approve(this.signer, spender, future, amount)
+  async approve(spender: string, tokenAddress: string, amount: BigNumberish) {
+    return approve(this.signer, spender, tokenAddress, amount)
   }
 
   /**
    * Fetch the spendable amount by another party(spender) from the owner's tokens on a future vault
    * @param spender - The contract/entity to which the allowance is set .
    * @param owner - The token owner's wallet address
-   * @param future - The future on which the allowance is set.
+   * @param tokenAddress - The address of the token contract.
    * @returns - The allowance in TokenAmount.
    */
-  async allowance(spender: string, owner: string, future: FutureVault) {
-    return fetchAllowance(this.provider, this.network, owner, spender, future)
+  async allowance(spender: string, owner: string, tokenAddress: string) {
+    return fetchAllowance(this.provider, this.network, owner, spender, tokenAddress)
   }
 
   /**
@@ -174,15 +173,6 @@ class APWineSDK {
    */
   async fetchAllFutureAggregates(amm:AMM) {
     return fetchAllFutureAggregates(this.provider, this.network, amm)
-  }
-
-  /**
-   * Fetch the token of a future vault instance.
-   * @param future - The target future vault instance.
-   * @returns - A token instance of the future vault.
-   */
-  async fetchFutureToken(future: FutureVault) {
-    return fetchFutureToken(this.provider, future)
   }
 
   /**
@@ -260,16 +250,16 @@ class APWineSDK {
   /**
   * Update the spendable amount by another party(spender) from the owner's tokens on a future vault.
   * @param spender - The contract/entity for which the allowance will be updated.
-  * @param future - The future on which the allowance is being set.
+  * @param tokenAddress - The address of the token contract.
   * @param amount - The amount of the allowance.
   * @returns - an SDK returnType which contains a transaction and/or an error.
   */
-  async updateAllowance(spender: string, future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+  async updateAllowance(spender: string, tokenAddress: string, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove) {
-      this.approve(spender, future, amount)
+      this.approve(spender, tokenAddress, amount)
     }
 
-    return updateAllowance(this.signer, spender, future, amount)
+    return updateAllowance(this.signer, spender, tokenAddress, amount)
   }
 
   /**
@@ -281,7 +271,7 @@ class APWineSDK {
    */
   async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
-      await this.approve(this.Controller.address, future, amount)
+      await this.approve(this.Controller.address, future.address, amount)
     }
 
     return withdraw(this.signer, this.network, future, amount)
@@ -296,7 +286,7 @@ class APWineSDK {
    */
   async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
-      await this.approve(this.Controller.address, future, amount)
+      await this.approve(this.Controller.address, future.address, amount)
     }
 
     return deposit(this.signer, this.network, future, amount)
