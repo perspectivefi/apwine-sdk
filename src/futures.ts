@@ -1,11 +1,10 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { AToken, AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
+import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
-import { AMM__factory } from '@apwine/amm'
+import { AMM, AMM__factory } from '@apwine/amm'
 import {
-  getAMMContract,
   getAMMRegistryContract,
   getControllerContract,
   getFutureVaultContract,
@@ -80,8 +79,7 @@ export const fetchFutureAggregateFromAddress = async (
   }
 }
 
-export const fetchAllFutureAggregates = async (signerOrProvider: Signer | Provider, network: Network) => {
-  const amm = getAMMContract(signerOrProvider, network)
+export const fetchAllFutureAggregates = async (signerOrProvider: Signer | Provider, network: Network, amm: AMM) => {
   const currentPeriodIndex = await (await amm.currentPeriodIndex()).toNumber()
   return Promise.all(range(0, currentPeriodIndex).map((periodIndex) => fetchFutureAggregateFromIndex(network, signerOrProvider, periodIndex)))
 }

@@ -20,12 +20,6 @@ export const getRegistryContract = (
     signerOrProvider
   )
 
-export const getAMMContract = (
-  signerOrProvider: Signer | Provider,
-  network: Network
-) =>
-  AMM__factory.connect(config.networks[network].AMM_REGISTRY, signerOrProvider)
-
 export const getTokencontract = (signerOrProvider: Signer | Provider, tokenAddress: string) =>
   AToken__factory.connect(tokenAddress, signerOrProvider)
 

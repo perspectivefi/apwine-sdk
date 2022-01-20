@@ -1,14 +1,15 @@
 import path from 'path'
 import dotenv from 'dotenv'
-import { ContractTransaction, ethers, providers, Signer } from 'ethers'
+import { ethers, providers, Signer } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { AToken__factory } from '@apwine/protocol'
-import { parseEther, parseUnits } from 'ethers/lib/utils'
+import { parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 import { getTokencontract } from '../src/contracts'
 
+jest.setTimeout(30000)
+
 describe('APWineSDK', () => {
-  let provider: JsonRpcProvider, signer: Signer, sdk: APWineSDK
+  let provider: JsonRpcProvider, signer: Signer, sdk: APWineSDK, ptAddress: string
 
   beforeAll(() => {
     dotenv.config({ path: path.resolve(__dirname, '../.env') })
@@ -22,12 +23,16 @@ describe('APWineSDK', () => {
     signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
   })
 
+  // afterAll(async () => {
+  //   await sdk.ready
+  //   sdk.swapIn({ from: 'Underlying', to: 'PT', amm: sdk.AMMs[0], amount: parseUnits('20', 18) }, { autoApprove: true })
+  // })
+
   beforeEach(() => {
     sdk = new APWineSDK({
       provider,
       signer,
       network: 'mainnet'
-
     })
   })
 
@@ -65,17 +70,34 @@ describe('APWineSDK', () => {
     ])
   })
 
-  it('Should be able to swap', async () => {
+  it('Should be able to swapIn', async () => {
     await sdk.ready
 
     const ptAddress = await sdk.AMMs[0].getPTAddress()
-    const balance = await getTokencontract(sdk.provider, ptAddress).balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')
-
+    const token = await getTokencontract(sdk.provider, ptAddress)
+    const user = await signer.getAddress()
+    const balance = await token.balanceOf(user)
     const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true })
 
     await swap.transaction?.wait()
 
-    const newBalance = await getTokencontract(sdk.provider, ptAddress).balanceOf('0x11118ABa876b4550FAA71bb2F62E7c814F26753D')
+    const newBalance = await token.balanceOf(user)
+
+    expect(balance.gt(newBalance)).toBe(true)
+  })
+
+  it.only('Should be able to swapOut', async () => {
+    await sdk.ready
+
+    const ptAddress = await sdk.AMMs[0].getPTAddress()
+    const token = await getTokencontract(sdk.provider, ptAddress)
+    const user = await signer.getAddress()
+    const balance = await token.balanceOf(user)
+
+    const swap = await sdk.swapOut({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true })
+    await swap.transaction?.wait()
+
+    const newBalance = await token.balanceOf(user)
 
     expect(balance.gt(newBalance)).toBe(true)
   })

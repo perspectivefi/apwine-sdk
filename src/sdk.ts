@@ -18,7 +18,7 @@ import {
   fetchAllowance,
   fetchAMMs
 } from './futures'
-import { approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll } from './lp'
+import { addLiquidity, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity } from './lp'
 import {
   getAMMRegistryContract,
   getAMMRouterContract,
@@ -172,8 +172,8 @@ class APWineSDK {
    * Fetch all aggregated Future constructs.
    * @returns - A collection of aggregated objects with future related data
    */
-  async fetchAllFutureAggregates() {
-    return fetchAllFutureAggregates(this.provider, this.network)
+  async fetchAllFutureAggregates(amm:AMM) {
+    return fetchAllFutureAggregates(this.provider, this.network, amm)
   }
 
   /**
@@ -215,20 +215,46 @@ class APWineSDK {
 
   /**
    * Fetch an aggregated construct of an LPTokenPool
-   * @param pairId - 0 or 1
+   * @param pairId - pair id of the tokenPair, 0 or 1
    * @param periodIndex anything from 0 to the current period index. Default is the current period.
    * @returns - An aggregated construct with LPTokenPool related data.
    */
-  async fetchLPTokenPool(pairId: PairId, periodIndex?: number) {
-    return fetchLPTokenPool(this.provider, this.network, pairId, periodIndex)
+  async fetchLPTokenPool(amm:AMM, pairId: PairId, periodIndex?: number) {
+    return fetchLPTokenPool(this.provider, amm, pairId, periodIndex)
   }
 
   /**
    * Fetch an aggregated construct collection of all LPTokenPools.
    * @returns - A collection of aggregated constructs with LPTokenPool related data.
    */
-  async fetchAllLPTokenPools() {
-    return fetchAllLPTokenPools(this.network, this.provider)
+  async fetchAllLPTokenPools(amm: AMM) {
+    return fetchAllLPTokenPools(this.provider, amm)
+  }
+
+  /**
+   * Add liqidity for the target AMM for a user.
+   * @param amm - The AMM to add liquidity to.
+   * @param pairId - pair id of the tokenPair, 0 or 1.
+   * @param poolAmountIn - amount of liquidity points to be added for the token pair.
+   * @param maxAmountsOut - maximum amount to be taken from the token pair.
+   * @param account - optional user account, signer.getAddress is the default.
+   * @returns - an SDK returnType which contains a transaction and/or an error.
+   */
+  async addLiquidity(amm:AMM, pairId: PairId, poolAmountIn: BigNumberish, maxAmountsOut: [BigNumberish, BigNumberish], account?: string) {
+    return addLiquidity(this.signer, this.network, amm, pairId, poolAmountIn, maxAmountsOut, account)
+  }
+
+  /**
+   * Remove liquidity from the target AMM for a user.
+   * @param amm - The AMM to add liquidity to.
+   * @param pairId - pair id of the tokenPair, 0 or 1.
+   * @param poolAmountOut - amount of liquidity points to be removed for the token pair.
+   * @param maxAmountsIn - maximum amount to be rece9ved from the token pair.
+   * @param account - optional user account, signer.getAddress is the default.
+   * @returns - an SDK returnType which contains a transaction and/or an error.
+   */
+  async removeLiquidity(amm:AMM, pairId: PairId, poolAmountOut: BigNumberish, maxAmountsIn: [BigNumberish, BigNumberish], account?: string) {
+    return removeLiquidity(this.signer, this.network, amm, pairId, poolAmountOut, maxAmountsIn, account)
   }
 
   /**
@@ -236,7 +262,7 @@ class APWineSDK {
   * @param spender - The contract/entity for which the allowance will be updated.
   * @param future - The future on which the allowance is being set.
   * @param amount - The amount of the allowance.
-  * @returns - Either an error, or the Transaction receipt.
+  * @returns - an SDK returnType which contains a transaction and/or an error.
   */
   async updateAllowance(spender: string, future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove) {
@@ -251,7 +277,7 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @returns - Either an error, or the Transaction receipt.
+   * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
@@ -266,7 +292,7 @@ class APWineSDK {
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
    * @param autoApprove - Approve automatically in case it's necessary.
-   * @returns - Either an error, or the Transaction receipt.
+   * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
@@ -285,9 +311,9 @@ class APWineSDK {
   async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: SwapOptions = { autoApprove: false }) {
     return swap('IN', {
       slippageTolerance: this.defaultSlippage,
-      ...params,
       signer: this.signer,
-      network: this.network
+      network: this.network,
+      ...params
     }, options)
   }
 
@@ -300,9 +326,9 @@ class APWineSDK {
   async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: SwapOptions = { autoApprove: false }) {
     return swap('OUT', {
       slippageTolerance: this.defaultSlippage,
-      ...params,
       signer: this.signer,
-      network: this.network
+      network: this.network,
+      ...params
     }, options)
   }
 
