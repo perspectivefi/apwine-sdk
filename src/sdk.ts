@@ -333,11 +333,10 @@ class APWineSDK {
   }
 
   /**
-   * Shows what steps to take swapping between a given a source and a target token.
+   * Returns information about a swap path in different representations.
    * @param from  - source token
    * @param to  - target token
-   * @param visual - choose result format: ['Token1', 'Token2', ...] || 'Token1->Token2'
-   * @returns tokenSwapPath from left to right
+   * @returns an object containing { tokenPath, poolPath, namedTokenPath, visual}
    */
   howToSwap(from: APWToken, to: APWToken) {
     const { tokenPath, namedTokenPath, graphSearchResult } = findTokenPath(from, to)
