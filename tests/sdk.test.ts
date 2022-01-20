@@ -89,7 +89,7 @@ describe('APWineSDK', () => {
     expect(balance.gt(newBalance)).toBe(true)
   })
 
-  it.only('Should be able to swapOut', async () => {
+  it.skip('Should be able to swapOut', async () => {
     await sdk.ready
 
     const ptAddress = await sdk.AMMs[0].getPTAddress()
