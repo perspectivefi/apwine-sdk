@@ -26,7 +26,7 @@ import {
   getRegistryContract
 } from './contracts'
 
-import { findTokenPath } from './utils/swap'
+import { findPoolPath, findTokenPath } from './utils/swap'
 import { swap, SwapOptions, SwapParams } from './swap'
 import { WithOptional } from './utils/general'
 
@@ -339,9 +339,16 @@ class APWineSDK {
    * @param visual - choose result format: ['Token1', 'Token2', ...] || 'Token1->Token2'
    * @returns tokenSwapPath from left to right
    */
-  howToSwap(from: APWToken, to: APWToken, visual?: boolean) {
-    const { namedTokenPath, graphSearchResult } = findTokenPath(from, to)
-    return visual ? graphSearchResult?.join('->') : namedTokenPath
+  howToSwap(from: APWToken, to: APWToken) {
+    const { tokenPath, namedTokenPath, graphSearchResult } = findTokenPath(from, to)
+    const poolPath = findPoolPath(namedTokenPath)
+
+    return {
+      tokenPath,
+      poolPath,
+      namedTokenPath,
+      visual: graphSearchResult?.join('->')
+    }
   }
 }
 

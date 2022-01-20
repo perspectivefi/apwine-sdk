@@ -88,8 +88,6 @@ export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, optio
 
     const swap = swapType === 'IN' ? router.swapExactAmountIn : router.swapExactAmountOut
 
-    console.log({ amm: amm.address, poolPath, tokenPath, amountIn: amountIn.toString(), amountOut: amountOut.toString(), user, deadline: deadline?.getTime() ?? Date.now() + MINUTE })
-
     const transaction = await swap(
       amm.address,
       poolPath,

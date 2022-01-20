@@ -55,7 +55,10 @@ describe('APWineSDK', () => {
   })
 
   it('should be able to tell how to swap tokens', () => {
-    expect(sdk.howToSwap('Underlying', 'FYT')).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
+    expect(sdk.howToSwap('Underlying', 'FYT').tokenPath).toEqual([1, 0, 0, 1])
+    expect(sdk.howToSwap('Underlying', 'FYT').namedTokenPath).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
+    expect(sdk.howToSwap('Underlying', 'FYT').poolPath).toEqual([0, 1])
+    expect(sdk.howToSwap('Underlying', 'FYT').visual).toEqual('Underlying->PT->FYT')
   })
 
   it('AMMs should be loaded eventually', async () => {
