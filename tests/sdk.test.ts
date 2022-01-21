@@ -2,7 +2,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { ethers, providers, Signer } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { parseUnits } from 'ethers/lib/utils'
+import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 import { getTokencontract } from '../src/contracts'
 
@@ -23,10 +23,13 @@ describe('APWineSDK', () => {
     signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
   })
 
-  // afterAll(async () => {
-  //   await sdk.ready
-  //   sdk.swapIn({ from: 'Underlying', to: 'PT', amm: sdk.AMMs[0], amount: parseUnits('20', 18) }, { autoApprove: true })
-  // })
+  afterAll(async () => {
+    await sdk.ready
+
+    const [amm] = await sdk.fetchAMMs()
+
+    sdk.swapIn({ from: 'Underlying', to: 'PT', amm, amount: parseUnits('20', 18) }, { autoApprove: true })
+  })
 
   beforeEach(() => {
     sdk = new APWineSDK({
@@ -54,17 +57,12 @@ describe('APWineSDK', () => {
     expect(sdk.Controller).toBeDefined()
   })
 
-  it('should be able to tell how to swap tokens', () => {
-    expect(sdk.howToSwap('Underlying', 'FYT').tokenPath).toEqual([1, 0, 0, 1])
-    expect(sdk.howToSwap('Underlying', 'FYT').namedTokenPath).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
-    expect(sdk.howToSwap('Underlying', 'FYT').poolPath).toEqual([0, 1])
-    expect(sdk.howToSwap('Underlying', 'FYT').visual).toEqual('Underlying->PT->FYT')
-  })
-
-  it('AMMs should be loaded eventually', async () => {
+  it('should be able to fetch all AMMs', async () => {
     await sdk.ready
 
-    expect(sdk.AMMs.map((amm) => amm.address)).toEqual([
+    const amms = await sdk.fetchAMMs()
+
+    expect(amms.map((amm) => amm.address)).toEqual([
       '0x8A362AA1c81ED0Ee2Ae677A8b59e0f563DD290Ba',
       '0xc61C0F4961F2093A083f47a4b783ad260DeAF7eA',
       '0x1604C5e9aB488D66E983644355511DCEF5c32EDF',
@@ -76,39 +74,90 @@ describe('APWineSDK', () => {
   it('Should be able to swapIn', async () => {
     await sdk.ready
 
-    const ptAddress = await sdk.AMMs[0].getPTAddress()
+    const [amm] = await sdk.fetchAMMs()
+
+    const ptAddress = await amm.getPTAddress()
     const token = await getTokencontract(sdk.provider, ptAddress)
     const user = await signer.getAddress()
     const balance = await token.balanceOf(user)
-    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true })
+    const swap = await sdk.swapIn({ from: 'PT', to: 'Underlying', amm, amount: parseUnits('10', 18) }, { autoApprove: true })
 
     await swap.transaction?.wait()
 
     const newBalance = await token.balanceOf(user)
 
-    expect(balance.gt(newBalance)).toBe(true)
+    expect(balance.gt(newBalance)).toBeTruthy()
   })
 
   it.skip('Should be able to swapOut', async () => {
     await sdk.ready
 
-    const ptAddress = await sdk.AMMs[0].getPTAddress()
+    const [amm] = await sdk.fetchAMMs()
+
+    const ptAddress = await amm.getPTAddress()
     const token = await getTokencontract(sdk.provider, ptAddress)
     const user = await signer.getAddress()
     const balance = await token.balanceOf(user)
 
-    const swap = await sdk.swapOut({ from: 'PT', to: 'Underlying', amm: sdk.AMMs[0], amount: parseUnits('10', 18) }, { autoApprove: true })
+    const swap = await sdk.swapOut({ from: 'PT', to: 'Underlying', amm, amount: parseUnits('10', 18) }, { autoApprove: true })
     await swap.transaction?.wait()
 
     const newBalance = await token.balanceOf(user)
 
-    expect(balance.gt(newBalance)).toBe(true)
+    expect(balance.gt(newBalance)).toBeTruthy()
   })
 
-  it.only('', async() => {
+  it('should be able to add liquidity', async() => {
     await sdk.ready
-    const rem = await sdk.removeLiquidity({ amm: sdk.AMMs[0], pairId: 0, poolAmountOut: 100, maxAmountsIn: [100, 100] })
 
-    console.log(rem)
+    const [amm] = await sdk.fetchAMMs()
+
+    const user = await signer.getAddress()
+    const lp = await sdk.fetchLPTokenPool(amm, 0)
+
+    const balance = await lp.token.balanceOf(user, lp.id)
+
+    const { transaction } = await sdk.addLiquidity({
+      amm,
+      pairId: 0,
+      poolAmountOut: parseEther('0.1'),
+      maxAmountsIn: [
+        parseEther('1000'),
+        parseEther('1000')]
+    },
+    { autoApprove: true })
+
+    await transaction?.wait()
+
+    const newBalance = await lp.token.balanceOf(user, lp.id)
+
+    expect(balance.lt(newBalance)).toBeTruthy()
+  })
+
+  it('should be able to remove liquidity', async() => {
+    await sdk.ready
+
+    const [amm] = await sdk.fetchAMMs()
+
+    const user = await signer.getAddress()
+    const lp = await sdk.fetchLPTokenPool(amm, 0)
+
+    const balance = await lp.token.balanceOf(user, lp.id)
+
+    const { transaction } = await sdk.removeLiquidity({
+      amm,
+      pairId: 0,
+      poolAmountIn: parseEther('0.1'),
+      minAmountsOut: [
+        parseEther('0'),
+        parseEther('0')]
+    },
+    { autoApprove: true })
+
+    await transaction?.wait()
+
+    const newBalance = await lp.token.balanceOf(user, lp.id)
+
+    expect(balance.gt(newBalance)).toBeTruthy()
   })
 })

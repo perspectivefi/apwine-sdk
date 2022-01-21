@@ -1,16 +1,13 @@
 import { AMM } from '@apwine/amm'
-import { FutureVault, FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
+import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
 import { BigNumber, BigNumberish, Signer } from 'ethers'
 
-import { APWToken, Network, MINUTE, SDKFunctionReturnType, Transaction } from './constants'
+import { APWToken, Network, MINUTE, SDKFunctionReturnType, Transaction, Options } from './constants'
 import { getAMMRouterContract } from './contracts'
-import { error, isApprovalNecessary } from './utils/general'
+import { error } from './utils/general'
 import { applySlippage, findSwapPath } from './utils/swap'
 import config from './config.json'
-
-export type SwapOptions = {
-    autoApprove: boolean
-}
+import { isApprovalNecessary } from './futures'
 
 export type SwapParams = {
     amm: AMM
@@ -34,21 +31,22 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
   ])
 
   const spender = config.networks[network].AMM_ROUTER
+  const user = await signer.getAddress()
 
   if (token === 'PT') {
-    const needsApproval = await isApprovalNecessary(signer, config.networks[network].AMM_ROUTER, ptAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, ptAddress, amount)
 
     return needsApproval && PT__factory.connect(ptAddress, signer).approve(spender, amount)
   }
 
   if (token === 'Underlying') {
-    const needsApproval = await isApprovalNecessary(signer, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
 
     return needsApproval && IERC20__factory.connect(underlyingAddress, signer).approve(spender, amount)
   }
 
   if (token === 'FYT') {
-    const needsApproval = await isApprovalNecessary(signer, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
 
     return needsApproval && FutureYieldToken__factory.connect(fytAddress, signer).approve(spender, amount)
   }
@@ -56,7 +54,7 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
   return error('NoSuchToken')
 }
 
-export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, options: SwapOptions): Promise<SDKFunctionReturnType<Transaction>> => {
+export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, options: Options): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, network, amm, from, to, amount: rawAmount, slippageTolerance, deadline } = params
   const amount = BigNumber.from(rawAmount)
 

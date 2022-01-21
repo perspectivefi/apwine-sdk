@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
-import { Network, PairId, APWToken } from './constants'
+import { Network, PairId, Options } from './constants'
 
 import {
   deposit,
@@ -16,7 +16,7 @@ import {
   approve,
   fetchAllowance,
   fetchAMMs,
-  getPoolTokens
+  isApprovalNecessary
 } from './futures'
 import { addLiquidity, AddLiquidityParams, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity, RemoveLiquidityParams } from './lp'
 import {
@@ -26,15 +26,13 @@ import {
   getRegistryContract
 } from './contracts'
 
-import { findPoolPath, findTokenPath } from './utils/swap'
-import { swap, SwapOptions, SwapParams } from './swap'
+import { swap, SwapParams } from './swap'
 import { WithOptional } from './utils/general'
-import { Options } from '.'
 
 type ConstructorProps = {
   network: Network
   provider: Provider
-  signer?: Signer
+  signer: Signer
   defaultSlippage?: number
 }
 
@@ -48,14 +46,14 @@ class APWineSDK {
 
   network: Network
   provider: Provider
-  signer?: Signer
+  signer: Signer
+  defaultUser = ''
 
   AMMRegistry: AMMRegistry
   Registry: Registry
   Router: AMMRouter
 
   // async props
-  AMMs: AMM[] = []
   Controller: Controller | null = null
 
   /**
@@ -65,12 +63,9 @@ class APWineSDK {
    */
   constructor({ network, signer, provider, defaultSlippage = 0.5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
+    this.signer = signer
     this.defaultSlippage = defaultSlippage
     this.network = network
-
-    if (signer) {
-      this.signer = signer
-    }
 
     this.AMMRegistry = getAMMRegistryContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
@@ -90,11 +85,19 @@ class APWineSDK {
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
-      fetchAMMs(this.signer, this.network).then((amms) => (this.AMMs = amms))
+      this.signer.getAddress().then((address) => (this.defaultUser = address))
     ])
 
     this.ready = ready
     return ready
+  }
+
+  /**
+   * Update default user on an existing APWineSDK instance.
+   * @param address - The address of the new user.
+   */
+  updateDefaultUser(address:string) {
+    this.defaultUser = address
   }
 
   /**
@@ -130,11 +133,19 @@ class APWineSDK {
   }
 
   /**
+   * fetch all AMMs
+   * @returns - Promise of an AMM collection.
+   */
+  async fetchAMMs() {
+    return fetchAMMs(this.signer, this.network)
+  }
+
+  /**
    * Approve transactions for a token amount on the target future vault.
    * @param spender - The contract/entity receiving approval for spend.
    * @param tokenAddress - The address of the token contract.
    * @param amount - The amount of tokens to be approved.
-   * @returns - Either an error, or a transaction receipt.
+   * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async approve(spender: string, tokenAddress: string, amount: BigNumberish) {
     return approve(this.signer, spender, tokenAddress, amount)
@@ -142,13 +153,13 @@ class APWineSDK {
 
   /**
    * Fetch the spendable amount by another party(spender) from the owner's tokens on a future vault
-   * @param spender - The contract/entity to which the allowance is set .
-   * @param owner - The token owner's wallet address
+   * @param spender - The contract/entity to which the allowance is set.
    * @param tokenAddress - The address of the token contract.
+   * @param account - (optional) The token owner's wallet address
    * @returns - The allowance in TokenAmount.
    */
-  async allowance(spender: string, owner: string, tokenAddress: string) {
-    return fetchAllowance(this.provider, this.network, owner, spender, tokenAddress)
+  async allowance(spender: string, tokenAddress: string, account?: string) {
+    return fetchAllowance(this.provider, this.network, account ?? this.defaultUser, spender, tokenAddress)
   }
 
   /**
@@ -157,7 +168,7 @@ class APWineSDK {
    * @returns - An aggregated object with future related data.
    */
   async fetchFutureAggregateFromIndex(index: number) {
-    return fetchFutureAggregateFromIndex(this.network, this.provider, index)
+    return fetchFutureAggregateFromIndex(this.provider, this.network, index)
   }
 
   /**
@@ -170,7 +181,7 @@ class APWineSDK {
   }
 
   /**
-   * Fetch all aggregated Future constructs.
+   * Fetch all aggregated Future constructs on an AMM.
    * @returns - A collection of aggregated objects with future related data
    */
   async fetchAllFutureAggregates(amm:AMM) {
@@ -186,29 +197,42 @@ class APWineSDK {
   }
 
   /**
+   * Check if the user needs to give approval to an entity, for an amount of a token.
+   * @param tokenAddress - The address of the token.
+   * @param amount - The amount in question.
+   * @param spender - The entity of which the approval is being queried.
+   * @param account - (optional) The owner of the tokens.
+   * @returns - a boolean value.
+   */
+  async isApprovalNecessary(tokenAddress: string, amount: BigNumberish, spender: string, account?: string) {
+    return isApprovalNecessary(this.signer, account ?? this.defaultUser, spender, tokenAddress, amount)
+  }
+
+  /**
    * Inspect LPToken approval status of an account.
-   * @param account - The account's approval to be checked.
-   * @param operator - The operator the approval is given to.
+   * @param amm - The amm on which to check LPToken approval status
+   * @param account -  (optional) The user whose approval status is queried
    * @returns - a boolean value of the approval of this account for all LPs.
    */
-  async isLPApprovedForAll(account: string, operator: string) {
-    return isLPApprovedForAll(this.provider, this.network, account, operator)
+  async isLPApprovedForAll(amm: AMM, account?: string) {
+    return isLPApprovedForAll(this.provider, amm, account ?? this.defaultUser)
   }
 
   /**
    * Set LPToken approval status for an account.
-   * @param account - The account for which the approval will be set.
+   * @param amm - The AMM on which the approval will happen.
    * @param approval - Boolean value of the approval.
-   * @returns
+   * @returns - an SDK returnType which contains a transaction and/or an error.
    */
-  async approveLPForAll(account: string, approval: boolean = true) {
-    return approveLPForAll(this.signer, this.network, account, approval)
+  async approveLPForAll(amm: AMM, approval: boolean = true) {
+    return approveLPForAll(this.signer, amm, approval)
   }
 
   /**
    * Fetch an aggregated construct of an LPTokenPool
+   * @param amm - The target AMM on which the tokenPool exists.
    * @param pairId - The pair id of the token pair, 0 or 1.
-   * @param periodIndex anything from 0 to the current period index. Default is the current period.
+   * @param periodIndex (optional) anything from 0 to the current period index. Default is the current period.
    * @returns - An aggregated construct with LPTokenPool related data.
    */
   async fetchLPTokenPool(amm:AMM, pairId: PairId, periodIndex?: number) {
@@ -225,28 +249,22 @@ class APWineSDK {
 
   /**
    * Add liqidity for the target AMM for a user.
-   * @param amm - The AMM to add liquidity to.
-   * @param pairId - The pair id of the token pair, 0 or 1.
-   * @param poolAmountIn - amount of liquidity points to be added for the token pair.
-   * @param maxAmountsOut - maximum amount to be taken from the token pair.
-   * @param account - optional user account, signer.getAddress is the default.
+   * @param0 - AddLiquidityParams: { amm, pairId, poolAmountOut, maxAmountsIn }
+   * @param1 - (optional) Options: { autoApprove: boolean }
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async addLiquidity(params: AddLiquidityParams, options?: Options) {
-    return addLiquidity({ signer: this.signer, network: this.network, ...params }, options)
+    return addLiquidity({ signer: this.signer, ...params }, options)
   }
 
   /**
    * Remove liquidity from the target AMM for a user.
-   * @param amm - The AMM to add liquidity to.
-   * @param pairId - pair id of the tokenPair, 0 or 1.
-   * @param poolAmountOut - amount of liquidity points to be removed for the token pair.
-   * @param maxAmountsIn - maximum amount to be rece9ved from the token pair.
-   * @param account - optional user account, signer.getAddress is the default.
+   * @param0 - RemoveLiquiditParams: { amm, pairid, poolAmountIn, minAmountsOut }
+   * @param1 - (optional) Options: { autoApprove: boolean }
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async removeLiquidity(params: RemoveLiquidityParams, options?: Options) {
-    return removeLiquidity({ signer: this.signer, network: this.network, ...params }, options)
+    return removeLiquidity({ signer: this.signer, ...params }, options)
   }
 
   /**
@@ -254,6 +272,7 @@ class APWineSDK {
   * @param spender - The contract/entity for which the allowance will be updated.
   * @param tokenAddress - The address of the token contract.
   * @param amount - The amount of the allowance.
+  * @param options - (optional) { autoApprove: boolean}
   * @returns - an SDK returnType which contains a transaction and/or an error.
   */
   async updateAllowance(spender: string, tokenAddress: string, amount: BigNumberish, options = { autoApprove: false }) {
@@ -300,7 +319,7 @@ class APWineSDK {
    * @param options - partial SwapOptions: automatic approval.
    * @returns - either an error object, or a ContractTransaction
    */
-  async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: SwapOptions = { autoApprove: false }) {
+  async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: Options = { autoApprove: false }) {
     return swap('IN', {
       slippageTolerance: this.defaultSlippage,
       signer: this.signer,
@@ -315,41 +334,13 @@ class APWineSDK {
    * @param options- partial SwapOptions: automatic approval.
    * @returns - either an error object, or a ContractTransaction
    */
-  async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: SwapOptions = { autoApprove: false }) {
+  async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: Options = { autoApprove: false }) {
     return swap('OUT', {
       slippageTolerance: this.defaultSlippage,
       signer: this.signer,
       network: this.network,
       ...params
     }, options)
-  }
-
-  /**
-   * Returns information about a swap path in different representations.
-   * @param from  - source token
-   * @param to  - target token
-   * @returns an object containing { tokenPath, poolPath, namedTokenPath, visual}
-   */
-  howToSwap(from: APWToken, to: APWToken) {
-    const { tokenPath, namedTokenPath, graphSearchResult } = findTokenPath(from, to)
-    const poolPath = findPoolPath(namedTokenPath)
-
-    return {
-      tokenPath,
-      poolPath,
-      namedTokenPath,
-      visual: graphSearchResult?.join('->')
-    }
-  }
-
-  /**
- * Get the token pair as contracts from a target AMM
- * @param amm - The target AMM
- * @param pairId - The pair id of the token pair, 0 or 1
- * @returns - An array of PT | Underlying | FYT instance pairs.
- */
-  async getPoolTokens(amm:AMM, pairId: PairId) {
-    return getPoolTokens(this.provider, amm, pairId)
   }
 }
 

@@ -23,13 +23,15 @@ export type PairId = typeof PAIR_IDS[number]
 export type Network = keyof typeof config.networks
 export const NETWORKS = Object.keys(config.networks) as Network[]
 
-export type DefaultParams = {
+export type QueryParams = {
   signerOrProvider: Signer | Provider
-  network: Network
 }
 
-export type DefaultTransactionParams ={
-  signer?: Signer
+export type TransactionParams = {
+  signer: Signer
+}
+
+export type WithNetwork = {
   network: Network
 }
 

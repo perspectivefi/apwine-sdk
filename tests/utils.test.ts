@@ -1,4 +1,4 @@
-import { findSwapPath } from '../src/utils/swap'
+import { findSwapPath, howToSwap } from '../src/utils/swap'
 
 describe('utils tests', () => {
   describe('swap utils', () => {
@@ -24,6 +24,17 @@ describe('utils tests', () => {
 
     it('For Underlying -> FYT it should return the correct path', () => {
       expect(findSwapPath('Underlying', 'FYT')).toEqual({ tokenPath: [1, 0, 0, 1], poolPath: [0, 1] })
+    })
+  })
+
+  describe('howToSwap', () => {
+    it('should be able to tell how to swap tokens', () => {
+      const { tokenPath, namedTokenPath, poolPath, visual } = howToSwap('Underlying', 'FYT')
+
+      expect(tokenPath).toEqual([1, 0, 0, 1])
+      expect(namedTokenPath).toEqual(['Underlying', 'PT', 'PT', 'FYT'])
+      expect(poolPath).toEqual([0, 1])
+      expect(visual).toEqual('Underlying->PT->FYT')
     })
   })
 })

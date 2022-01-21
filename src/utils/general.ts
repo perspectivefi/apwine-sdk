@@ -1,8 +1,7 @@
-import { BigNumberish, BytesLike, Signer } from 'ethers'
+import { BytesLike } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
-import { AToken__factory } from '@apwine/protocol'
 import errors from '../errors.json'
 import { Error } from '../constants'
 
@@ -226,11 +225,3 @@ export const isError = (input: unknown): input is Error => {
 }
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-export const isApprovalNecessary = async (signer: Signer, spender: string, tokenAddress:string, amount: BigNumberish) => {
-  const token = AToken__factory.connect(tokenAddress, signer)
-
-  const allowance = await token.allowance(await signer.getAddress(), spender)
-
-  return allowance.lt(amount)
-}
