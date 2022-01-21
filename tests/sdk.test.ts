@@ -120,7 +120,7 @@ describe('APWineSDK', () => {
     const { transaction } = await sdk.addLiquidity({
       amm,
       pairId: 0,
-      poolAmountOut: parseEther('0.1')
+      amount: parseEther('0.1')
     },
     { autoApprove: true })
 
@@ -144,7 +144,7 @@ describe('APWineSDK', () => {
     const { transaction } = await sdk.removeLiquidity({
       amm,
       pairId: 0,
-      poolAmountIn: parseEther('0.1')
+      amount: parseEther('0.1')
     },
     { autoApprove: true })
 

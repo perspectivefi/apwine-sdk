@@ -39,13 +39,13 @@ export const approveLPForAll = async (signer: Signer, amm: AMM, approved:boolean
 export type AddLiquidityParams = {
   amm: AMM,
   pairId: PairId,
-  poolAmountOut: BigNumberish,
+  amount: BigNumberish,
   maxAmountsIn?: [BigNumberish, BigNumberish],
   account?: string
 }
 
 export const addLiquidity = async (params: AddLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
-  const { signer, amm, pairId, poolAmountOut, maxAmountsIn, account } = params
+  const { signer, amm, pairId, amount, maxAmountsIn, account } = params
 
   const defaultMaxAmountsIn: [BigNumberish, BigNumberish] = [ethers.constants.MaxInt256, ethers.constants.MaxInt256]
   const [token1, token2] = await getPoolTokens(signer, amm, pairId)
@@ -66,7 +66,7 @@ export const addLiquidity = async (params: AddLiquidityParams & TransactionParam
     }
   }
 
-  const transaction = await amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn ?? defaultMaxAmountsIn)
+  const transaction = await amm.addLiquidity(pairId, amount, maxAmountsIn ?? defaultMaxAmountsIn)
 
   return { transaction }
 }
@@ -74,13 +74,13 @@ export const addLiquidity = async (params: AddLiquidityParams & TransactionParam
 export type RemoveLiquidityParams = {
   amm: AMM,
   pairId: PairId,
-  poolAmountIn: BigNumberish,
+  amount: BigNumberish,
   minAmountsOut?: [BigNumberish, BigNumberish],
   account?: string
 }
 
 export const removeLiquidity = async (params: RemoveLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
-  const { signer, amm, pairId, poolAmountIn, minAmountsOut, account } = params
+  const { signer, amm, pairId, amount, minAmountsOut, account } = params
 
   const defaultMinAmountsOut: [BigNumberish, BigNumberish] = [BigNumber.from('0'), BigNumber.from('0')]
   const user = account ?? await signer.getAddress()
@@ -93,7 +93,7 @@ export const removeLiquidity = async (params: RemoveLiquidityParams & Transactio
     }
   }
 
-  const transaction = await amm.removeLiquidity(pairId, poolAmountIn, minAmountsOut ?? defaultMinAmountsOut, { from: user })
+  const transaction = await amm.removeLiquidity(pairId, amount, minAmountsOut ?? defaultMinAmountsOut, { from: user })
 
   return { transaction }
 }
