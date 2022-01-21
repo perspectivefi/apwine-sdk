@@ -98,13 +98,13 @@ import APWineSDK from '@apwine/sdk'
 import ethers from 'ethers'
 // ...
 
-// You will need a provider
+// You will need a provider for queries.
 const alchemyProvider = new ethers.providers.AlchemyProvider(
   'kovan',
   #YOUR ALCHEMY API KEY
 )
 
-// Optionally you can add a signer
+// and a signer for transactions.
 const signer = new ethers.Wallet(
   #YOUR PRIVATE KEY,
   alchemyProvider
