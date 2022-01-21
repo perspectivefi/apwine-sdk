@@ -249,7 +249,7 @@ class APWineSDK {
 
   /**
    * Add liqidity for the target AMM for a user.
-   * @param0 - AddLiquidityParams: { amm, pairId, poolAmountOut, maxAmountsIn }
+   * @param0 - AddLiquidityParams: { amm, pairId, poolAmountOut, maxAmountsIn?, account?}
    * @param1 - (optional) Options: { autoApprove: boolean }
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
@@ -259,7 +259,7 @@ class APWineSDK {
 
   /**
    * Remove liquidity from the target AMM for a user.
-   * @param0 - RemoveLiquiditParams: { amm, pairid, poolAmountIn, minAmountsOut }
+   * @param0 - RemoveLiquiditParams: { amm, pairid, poolAmountIn, minAmountsOut?, account? }
    * @param1 - (optional) Options: { autoApprove: boolean }
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */

@@ -1,6 +1,6 @@
 
 import { AMM, LPToken__factory } from '@apwine/amm'
-import { BigNumberish, Signer } from 'ethers'
+import { BigNumber, BigNumberish, ethers, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'
@@ -40,17 +40,19 @@ export type AddLiquidityParams = {
   amm: AMM,
   pairId: PairId,
   poolAmountOut: BigNumberish,
-  maxAmountsIn: [BigNumberish, BigNumberish],
+  maxAmountsIn?: [BigNumberish, BigNumberish],
+  account?: string
 }
 
 export const addLiquidity = async (params: AddLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
-  const { signer, amm, pairId, poolAmountOut, maxAmountsIn } = params
+  const { signer, amm, pairId, poolAmountOut, maxAmountsIn, account } = params
 
+  const defaultMaxAmountsIn: [BigNumberish, BigNumberish] = [ethers.constants.MaxInt256, ethers.constants.MaxInt256]
   const [token1, token2] = await getPoolTokens(signer, amm, pairId)
-  const user = await signer.getAddress()
+  const user = account ?? await signer.getAddress()
 
   if (options.autoApprove) {
-    const [maxAmountT1, maxAmountT2] = maxAmountsIn
+    const [maxAmountT1, maxAmountT2] = maxAmountsIn ?? defaultMaxAmountsIn
 
     const needsApprovalForT1 = await isApprovalNecessary(signer, user, amm.address, token1.address, maxAmountT1)
     const needsApprovalForT2 = await isApprovalNecessary(signer, user, amm.address, token2.address, maxAmountT2)
@@ -64,7 +66,7 @@ export const addLiquidity = async (params: AddLiquidityParams & TransactionParam
     }
   }
 
-  const transaction = await amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn)
+  const transaction = await amm.addLiquidity(pairId, poolAmountOut, maxAmountsIn ?? defaultMaxAmountsIn)
 
   return { transaction }
 }
@@ -73,18 +75,15 @@ export type RemoveLiquidityParams = {
   amm: AMM,
   pairId: PairId,
   poolAmountIn: BigNumberish,
-  minAmountsOut: [BigNumberish, BigNumberish],
+  minAmountsOut?: [BigNumberish, BigNumberish],
   account?: string
 }
 
 export const removeLiquidity = async (params: RemoveLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
-  const { signer, amm, pairId, poolAmountIn, minAmountsOut } = params
+  const { signer, amm, pairId, poolAmountIn, minAmountsOut, account } = params
 
-  if (!signer) {
-    return error('NoSigner')
-  }
-
-  const user = await signer.getAddress()
+  const defaultMinAmountsOut: [BigNumberish, BigNumberish] = [BigNumber.from('0'), BigNumber.from('0')]
+  const user = account ?? await signer.getAddress()
 
   if (options.autoApprove) {
     const isApproved = await isLPApprovedForAll(signer, amm, user)
@@ -94,7 +93,7 @@ export const removeLiquidity = async (params: RemoveLiquidityParams & Transactio
     }
   }
 
-  const transaction = await amm.removeLiquidity(pairId, poolAmountIn, minAmountsOut, { from: user })
+  const transaction = await amm.removeLiquidity(pairId, poolAmountIn, minAmountsOut ?? defaultMinAmountsOut, { from: user })
 
   return { transaction }
 }
