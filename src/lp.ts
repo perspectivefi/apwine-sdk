@@ -5,8 +5,8 @@ import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import xprod from 'ramda/src/xprod'
 
-import { PAIR_IDS, PairId, Transaction, Options, SDKFunctionReturnType, TransactionParams } from './constants'
-import { error } from './utils/general'
+import { PAIR_IDS } from './constants'
+import { PairId, Transaction, Options, SDKFunctionReturnType, TransactionParams, RemoveLiquidityParams, AddLiquidityParams } from './types'
 import { isApprovalNecessary } from './futures'
 import { getPoolTokens } from './utils/swap'
 
@@ -36,14 +36,6 @@ export const approveLPForAll = async (signer: Signer, amm: AMM, approved:boolean
   }
 }
 
-export type AddLiquidityParams = {
-  amm: AMM,
-  pairId: PairId,
-  amount: BigNumberish,
-  maxAmountsIn?: [BigNumberish, BigNumberish],
-  account?: string
-}
-
 export const addLiquidity = async (params: AddLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, amm, pairId, amount, maxAmountsIn, account } = params
 
@@ -69,14 +61,6 @@ export const addLiquidity = async (params: AddLiquidityParams & TransactionParam
   const transaction = await amm.addLiquidity(pairId, amount, maxAmountsIn ?? defaultMaxAmountsIn)
 
   return { transaction }
-}
-
-export type RemoveLiquidityParams = {
-  amm: AMM,
-  pairId: PairId,
-  amount: BigNumberish,
-  minAmountsOut?: [BigNumberish, BigNumberish],
-  account?: string
 }
 
 export const removeLiquidity = async (params: RemoveLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {

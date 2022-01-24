@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
-import { Network, PairId, Options } from './constants'
+import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams } from './types'
 
 import {
   deposit,
@@ -18,7 +18,7 @@ import {
   fetchAMMs,
   isApprovalNecessary
 } from './futures'
-import { addLiquidity, AddLiquidityParams, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity, RemoveLiquidityParams } from './lp'
+import { addLiquidity, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity } from './lp'
 import {
   getAMMRegistryContract,
   getAMMRouterContract,
@@ -29,14 +29,14 @@ import {
 import { swap, SwapParams } from './swap'
 import { WithOptional } from './utils/general'
 
-type ConstructorProps = {
+export type ConstructorProps = {
   network: Network
   provider: Provider
   signer: Signer
   defaultSlippage?: number
 }
 
-type ConstructorOptions = {
+export type ConstructorOptions = {
   initialize: boolean
 }
 

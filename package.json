@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "yarn build:dev --watch",
-    "build:dev": "rimraf dist && tsup src/index.ts src/constants.ts src/utils/index.ts --dts --sourcemap",
+    "build:dev": "rimraf dist && tsup src/index.ts src/constants.ts src/types.ts src/utils/index.ts --dts --sourcemap",
     "build": "yarn build:dev --minify",
     "test": "jest",
     "release": "yarn build  && yarn test && npm publish --access public",
@@ -17,7 +17,7 @@
     "v:major": "npm verion major",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "docs": "typedoc --out docs src/index.ts "
+    "docs": "typedoc"
   },
   "babel": {
     "presets": [

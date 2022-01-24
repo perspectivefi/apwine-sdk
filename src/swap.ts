@@ -2,7 +2,8 @@ import { AMM } from '@apwine/amm'
 import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
 import { BigNumber, BigNumberish, Signer } from 'ethers'
 
-import { APWToken, Network, MINUTE, SDKFunctionReturnType, Transaction, Options } from './constants'
+import { MINUTE } from './constants'
+import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, TransactionParams, WithNetwork } from './types'
 import { getAMMRouterContract } from './contracts'
 import { error } from './utils/general'
 import { applySlippage, findSwapPath } from './utils/swap'
@@ -18,10 +19,7 @@ export type SwapParams = {
     deadline?: Date
 }
 
-export type SwapParamsFull = SwapParams & {
-    signer?: Signer
-    network: Network
-}
+export type SwapParamsFull = SwapParams & TransactionParams & WithNetwork
 
 const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: APWToken, amount: BigNumberish) => {
   const [ptAddress, underlyingAddress, fytAddress] = await Promise.all([
@@ -57,11 +55,6 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
 export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, options: Options): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, network, amm, from, to, amount: rawAmount, slippageTolerance, deadline } = params
   const amount = BigNumber.from(rawAmount)
-
-  if (!signer) {
-    return error('NoSigner')
-  }
-
   const router = getAMMRouterContract(signer, network)
   const user = await signer.getAddress()
   const { poolPath, tokenPath } = findSwapPath(from, to)

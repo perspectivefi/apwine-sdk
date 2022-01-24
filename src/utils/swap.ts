@@ -3,7 +3,7 @@ import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { AMM } from '@apwine/amm'
 import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
-import { PairId, APWToken } from '../constants'
+import { PairId, APWToken } from '../types'
 import pools from './pools'
 
 export const findTokenPath = (from: APWToken, to: APWToken) => {

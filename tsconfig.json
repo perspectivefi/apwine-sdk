@@ -20,5 +20,9 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
   },
+  "typedocOptions": {
+    "entryPoints": ["src/index.ts", "src/constants.ts",  "src/utils/index.ts"],
+    "out": "docs"
+},
   "include": ["src", "types", "./test", "/node_modules/@apwine", "global.d.ts"],
 }

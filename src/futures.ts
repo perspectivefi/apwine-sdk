@@ -12,7 +12,8 @@ import {
   getTokencontract
 } from './contracts'
 import { getAddress } from './utils/general'
-import { CHAIN_IDS, Network, SDKFunctionReturnType, Transaction } from './constants'
+import { CHAIN_IDS } from './constants'
+import { FutureAggregate, Network, SDKFunctionReturnType, Transaction } from './types'
 
 export const fetchFutureAggregateFromIndex = async (
   signerOrProvider: Signer | Provider,
@@ -26,18 +27,6 @@ export const fetchFutureAggregateFromIndex = async (
 
   return fetchFutureAggregateFromAddress(signerOrProvider, network, futureAddress)
 }
-
-export type FutureAggregate = {
-  address: string
-  ibtAddress: string
-  apwibtAddress: string
-  period: BigNumber
-  platform: string
-  depositsPaused: boolean
-  withdrawalsPaused: boolean
-  nextPeriodIndex: BigNumber
-  nextPeriodTimestamp: BigNumber
- }
 
 export const fetchFutureAggregateFromAddress = async (
   signerOrProvider: Signer | Provider,

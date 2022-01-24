@@ -1,9 +1,5 @@
 {
   "FaultySlippage": "Slippage tolerance % must be between 1 and 100.",
   "InvalidSwapRoute": "Cannot swap, the route is probably incorrect.",
-  "NoFuture": "Swapping FYT requires passing a future to the swap function.",
-  "NoSigner": "Please provide a signer either by calling sdk.updateSinger, or creating a new SDK instance with a signer",
-  "NoSuchToken": "Please provide one of the following tokens: PT, Underlying, FYT",
-  "LPAddNotApproved": "Adding liquidity to this AMM is not approved for this account.",
-  "LPRemovalNotApproved": "Removing liquidity from this AMM is not approved for this account."
+  "NoSuchToken": "Please provide one of the following tokens: PT, Underlying, FYT"
 }

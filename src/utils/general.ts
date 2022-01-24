@@ -3,7 +3,7 @@ import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
 import errors from '../errors.json'
-import { Error } from '../constants'
+import { Error } from '../types'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)

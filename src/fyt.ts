@@ -1,7 +1,7 @@
 import { FutureYieldToken__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
-import { Network } from './constants'
+import { Network } from './types'
 import { fetchAllFutureVaults } from './futures'
 
 export const fetchFYTTokens = async (signerOrProvider: Signer | Provider, network: Network) => {
