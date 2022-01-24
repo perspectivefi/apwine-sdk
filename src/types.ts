@@ -33,6 +33,17 @@ export type Pool = [APWToken, APWToken]
 export type SDKFunctionReturnType<T> = Error & T
 export type Transaction = { transaction?: ContractTransaction }
 
+export type SDKProps = {
+    network: Network
+    provider: Provider
+    signer: Signer
+    defaultSlippage?: number
+  }
+
+export type SDKOptions = {
+    initialize: boolean
+  }
+
 export type FutureAggregate = {
     address: string
     ibtAddress: string
@@ -43,6 +54,15 @@ export type FutureAggregate = {
     withdrawalsPaused: boolean
     nextPeriodIndex: BigNumber
     nextPeriodTimestamp: BigNumber
+}
+
+export type SwapParams = {
+    amm: AMM
+    from: APWToken
+    to: APWToken
+    amount:BigNumberish
+    slippageTolerance: number
+    deadline?: Date
 }
 
 export type RemoveLiquidityParams = {
@@ -60,3 +80,5 @@ export type AddLiquidityParams = {
     maxAmountsIn?: [BigNumberish, BigNumberish],
     account?: string
 }
+
+export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

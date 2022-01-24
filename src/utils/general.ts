@@ -223,5 +223,3 @@ export const error = (type: keyof typeof errors): Error => ({ error: errors[type
 export const isError = (input: unknown): input is Error => {
   return typeof input === 'object' && input !== null && 'error' in input
 }
-
-export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

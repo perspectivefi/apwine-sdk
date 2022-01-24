@@ -3,21 +3,12 @@ import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine
 import { BigNumber, BigNumberish, Signer } from 'ethers'
 
 import { MINUTE } from './constants'
-import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, TransactionParams, WithNetwork } from './types'
+import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, TransactionParams, WithNetwork, SwapParams } from './types'
 import { getAMMRouterContract } from './contracts'
 import { error } from './utils/general'
 import { applySlippage, findSwapPath } from './utils/swap'
 import config from './config.json'
 import { isApprovalNecessary } from './futures'
-
-export type SwapParams = {
-    amm: AMM
-    from: APWToken
-    to: APWToken
-    amount:BigNumberish
-    slippageTolerance: number
-    deadline?: Date
-}
 
 export type SwapParamsFull = SwapParams & TransactionParams & WithNetwork
 

@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
-import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams } from './types'
+import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams, WithOptional, SwapParams, SDKProps, SDKOptions } from './types'
 
 import {
   deposit,
@@ -26,19 +26,7 @@ import {
   getRegistryContract
 } from './contracts'
 
-import { swap, SwapParams } from './swap'
-import { WithOptional } from './utils/general'
-
-export type ConstructorProps = {
-  network: Network
-  provider: Provider
-  signer: Signer
-  defaultSlippage?: number
-}
-
-export type ConstructorOptions = {
-  initialize: boolean
-}
+import { swap } from './swap'
 
 class APWineSDK {
   ready: ReturnType<APWineSDK['initialize']> | boolean = false
@@ -61,7 +49,7 @@ class APWineSDK {
    * @param param0 - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider, defaultSlippage = 0.5 }: ConstructorProps, options: ConstructorOptions = { initialize: true }) {
+  constructor({ network, signer, provider, defaultSlippage = 0.5 }: SDKProps, options: SDKOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
     this.defaultSlippage = defaultSlippage
