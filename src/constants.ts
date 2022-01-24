@@ -17,7 +17,7 @@ export const CHAIN_IDS: Record<Network, number> = {
   polygon: 137
 }
 
-export const apwTokens = ['PT', 'Underlying', 'FYT'] as const
+export const APW_TOKENS = ['PT', 'Underlying', 'FYT'] as const
 
-export const pool1: Pool = ['PT', 'Underlying']
-export const pool2: Pool = ['PT', 'FYT']
+export const POOL_ONE: Pool = ['PT', 'Underlying']
+export const POOL_TWO: Pool = ['PT', 'FYT']

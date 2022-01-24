@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish, ContractTransaction, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { AMM } from '@apwine/amm'
-import { apwTokens, PAIR_IDS } from './constants'
+import { APW_TOKENS, PAIR_IDS } from './constants'
 import config from './config.json'
 
 export type Error = {
@@ -27,7 +27,7 @@ export type WithNetwork = {
     network: Network
   }
 
-export type APWToken = typeof apwTokens[number]
+export type APWToken = typeof APW_TOKENS[number]
 export type Pool = [APWToken, APWToken]
 
 export type SDKFunctionReturnType<T> = Error & T
