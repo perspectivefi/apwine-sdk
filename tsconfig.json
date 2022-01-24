@@ -17,6 +17,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+    "isolatedModules": true,
     "resolveJsonModule": true,
   },
   "include": ["src", "types", "./test", "/node_modules/@apwine", "global.d.ts"],

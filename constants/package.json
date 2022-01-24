@@ -1,0 +1,4 @@
+{
+  "main": "dist/apwine-sdk-constants.cjs.js",
+  "module": "dist/apwine-sdk-constants.esm.js"
+}
