@@ -34,7 +34,7 @@
     "v:patch": "npm version patch",
     "v:minor": "npm version minor",
     "v:major": "npm verion major",
-    "docs": "typedoc"
+    "docs": "typedoc --plugin typedoc-plugin-extras --footerDate --customTitle 'APWine SDK' --favicon https://app.apwine.fi/favicon.ico"
   },
   "babel": {
     "presets": [
@@ -79,6 +79,7 @@
     "tslib": "^2.3.1",
     "tsup": "^5.11.11",
     "typedoc": "^0.22.10",
+    "typedoc-plugin-extras": "^2.2.3",
     "typescript": "^4.5.4"
   },
   "dependencies": {
