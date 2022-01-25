@@ -11,11 +11,11 @@ export const PAIR_IDS = [0, 1] as const
 
 export const NETWORKS = Object.keys(config.networks) as Network[]
 
-export const CHAIN_IDS: Record<Network, number> = {
+export const CHAIN_IDS = {
   kovan: 42,
   mainnet: 1,
   polygon: 137
-}
+} as const
 
 export const APW_TOKENS = ['PT', 'Underlying', 'FYT'] as const
 

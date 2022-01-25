@@ -5,7 +5,7 @@ import { BigNumber, BigNumberish, Signer } from 'ethers'
 import { MINUTE } from './constants'
 import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, TransactionParams, WithNetwork, SwapParams } from './types'
 import { getAMMRouterContract } from './contracts'
-import { error } from './utils/general'
+import { error, getNetworkConfig } from './utils/general'
 import { applySlippage, findSwapPath } from './utils/swap'
 import config from './config.json'
 import { isApprovalNecessary } from './futures'
@@ -19,23 +19,23 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
     amm.getFYTAddress()
   ])
 
-  const spender = config.networks[network].AMM_ROUTER
+  const spender = getNetworkConfig(network).AMM_ROUTER
   const user = await signer.getAddress()
 
   if (token === 'PT') {
-    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, ptAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, spender, ptAddress, amount)
 
     return needsApproval && PT__factory.connect(ptAddress, signer).approve(spender, amount)
   }
 
   if (token === 'Underlying') {
-    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, spender, underlyingAddress, amount)
 
     return needsApproval && IERC20__factory.connect(underlyingAddress, signer).approve(spender, amount)
   }
 
   if (token === 'FYT') {
-    const needsApproval = await isApprovalNecessary(signer, user, config.networks[network].AMM_ROUTER, underlyingAddress, amount)
+    const needsApproval = await isApprovalNecessary(signer, user, spender, underlyingAddress, amount)
 
     return needsApproval && FutureYieldToken__factory.connect(fytAddress, signer).approve(spender, amount)
   }

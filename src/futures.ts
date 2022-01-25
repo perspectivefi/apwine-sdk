@@ -11,7 +11,7 @@ import {
   getRegistryContract,
   getTokencontract
 } from './contracts'
-import { getAddress } from './utils/general'
+import { getAddress, getNetworkChainId } from './utils/general'
 import { CHAIN_IDS } from './constants'
 import { FutureAggregate, Network, SDKFunctionReturnType, Transaction } from './types'
 
@@ -121,7 +121,7 @@ export const fetchAllowance = async (signerOrProvider: Signer | Provider, networ
   const t = getTokencontract(signerOrProvider, tokenAddress)
   const allowance = await t.allowance(owner, spender)
   const decimals = await t.decimals()
-  const token = new Token(CHAIN_IDS[network], t.address, decimals)
+  const token = new Token(getNetworkChainId(network), t.address, decimals)
 
   return new TokenAmount(token, allowance.toBigInt())
 }

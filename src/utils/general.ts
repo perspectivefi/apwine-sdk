@@ -3,7 +3,9 @@ import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
 import errors from '../errors.json'
-import { Error } from '../types'
+import { Error, Network } from '../types'
+import config from '../config.json'
+import { CHAIN_IDS, NETWORKS } from '../constants'
 
 const version = 'bytes/5.5.0'
 const logger = new Logger(version)
@@ -222,4 +224,18 @@ export const error = (type: keyof typeof errors): Error => ({ error: errors[type
 
 export const isError = (input: unknown): input is Error => {
   return typeof input === 'object' && input !== null && 'error' in input
+}
+
+export const getNetworkConfig = (network:Network) => {
+  const [name] = Object.entries(CHAIN_IDS).find((entry) => entry.includes(network))! as [keyof typeof CHAIN_IDS, number]
+
+  return config.networks[name]
+}
+
+export const getNetworkChainId = (network : Network) => {
+  if (typeof network === 'number') {
+    return network
+  }
+
+  return CHAIN_IDS[network]
 }

@@ -10,13 +10,14 @@ import { Signer } from 'ethers'
 import { Network } from './types'
 
 import config from './config.json'
+import { getNetworkConfig } from './utils/general'
 
 export const getRegistryContract = (
   signerOrProvider: Signer | Provider,
   network: Network
 ) =>
   Registry__factory.connect(
-    config.networks[network].REGISTRY_ADDRESS,
+    getNetworkConfig(network).REGISTRY_ADDRESS,
     signerOrProvider
   )
 
@@ -27,10 +28,10 @@ export const getAMMRouterContract = (
   signerOrProvider: Signer | Provider,
   network: Network
 ) =>
-  AMMRouter__factory.connect(config.networks[network].AMM_ROUTER, signerOrProvider)
+  AMMRouter__factory.connect(getNetworkConfig(network).AMM_ROUTER, signerOrProvider)
 
 export const getAMMRegistryContract = (signerOrProvider: Signer | Provider, network: Network) =>
-  AMMRegistry__factory.connect(config.networks[network].AMM_REGISTRY, signerOrProvider)
+  AMMRegistry__factory.connect(getNetworkConfig(network).AMM_REGISTRY, signerOrProvider)
 
 export const getControllerContract = async (
   signerOrProvider: Signer | Provider,
