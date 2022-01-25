@@ -7,7 +7,6 @@ import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, Transac
 import { getAMMRouterContract } from './contracts'
 import { error, getNetworkConfig } from './utils/general'
 import { applySlippage, findSwapPath } from './utils/swap'
-import config from './config.json'
 import { isApprovalNecessary } from './futures'
 
 export type SwapParamsFull = SwapParams & TransactionParams & WithNetwork

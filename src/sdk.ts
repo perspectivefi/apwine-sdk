@@ -29,19 +29,56 @@ import {
 import { swap } from './swap'
 
 class APWineSDK {
+  /**
+   * Await this propery to use asynchronous props, like Controller.
+   */
   ready: ReturnType<APWineSDK['initialize']> | boolean = false
+
+  /**
+   * The slippage tolerance being used by default on swaps.
+   */
   defaultSlippage: number
 
+  /**
+   * The network the SDK instance is connected to.
+   */
   network: Network
+
+  /**
+   * The provider, necessary for fetching data.
+   */
   provider: Provider
+
+  /**
+   * The signer, necessary for executing transactions.
+   */
   signer: Signer
+
+  /**
+   * The default user which will be used in case no user is passed to certain functions.
+   * The initial value will be the result of signer.getAddress()
+   */
   defaultUser = ''
 
+  /**
+   * The AMM Registry contract instance. Keeps track of all AMMs.
+   */
   AMMRegistry: AMMRegistry
+
+  /**
+   * The Registry contract instance. Keeps track of all utility contracts.
+   */
   Registry: Registry
+
+  /**
+   * The AMM Router contract instance. Simplifies some processes through AMMs.
+   */
   Router: AMMRouter
 
-  // async props
+  /**
+   * The Controller contract instance. Provides some basic flows, like withdraw/deposit.
+   * @async - Loaded asynchronously.
+   */
   Controller: Controller | null = null
 
   /**
@@ -114,14 +151,14 @@ class APWineSDK {
 
   /**
    * Set default slippage tolerance for the SDK instance.
-   * @param slippage - default slippage to be set.
+   * @param slippage - Default slippage to be set.
    */
   updateSlippageTolerance(slippage: number) {
     this.defaultSlippage = slippage
   }
 
   /**
-   * fetch all AMMs
+   * Fetch all AMMs
    * @returns - Promise of an AMM collection.
    */
   async fetchAMMs() {
@@ -129,7 +166,7 @@ class APWineSDK {
   }
 
   /**
-   * Approve transactions for a token amount on the target future vault.
+   * Approve transactions for a token amount for the target token.
    * @param spender - The contract/entity receiving approval for spend.
    * @param tokenAddress - The address of the token contract.
    * @param amount - The amount of tokens to be approved.
@@ -189,7 +226,7 @@ class APWineSDK {
    * @param tokenAddress - The address of the token.
    * @param amount - The amount in question.
    * @param spender - The entity of which the approval is being queried.
-   * @param account - (optional) The owner of the tokens.
+   * @param account - The owner of the tokens.
    * @returns - a boolean value.
    */
   async isApprovalNecessary(tokenAddress: string, amount: BigNumberish, spender: string, account?: string) {
@@ -198,8 +235,8 @@ class APWineSDK {
 
   /**
    * Inspect LPToken approval status of an account.
-   * @param amm - The amm on which to check LPToken approval status
-   * @param account -  (optional) The user whose approval status is queried
+   * @param amm - The amm on which to check LPToken approval status.
+   * @param account - The user whose approval status is queried.
    * @returns - a boolean value of the approval of this account for all LPs.
    */
   async isLPApprovedForAll(amm: AMM, account?: string) {
@@ -237,8 +274,8 @@ class APWineSDK {
 
   /**
    * Add liqidity for the target AMM for a user.
-   * @param0 - AddLiquidityParams: { amm, pairId, amount, maxAmountsIn?, account?}
-   * @param1 - (optional) Options: { autoApprove: boolean }
+   * @param0 - @AddLiquidityParams
+   * @param1 - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async addLiquidity(params: AddLiquidityParams, options?: Options) {
@@ -247,8 +284,8 @@ class APWineSDK {
 
   /**
    * Remove liquidity from the target AMM for a user.
-   * @param0 - RemoveLiquiditParams: { amm, pairid, amount, minAmountsOut?, account? }
-   * @param1 - (optional) Options: { autoApprove: boolean }
+   * @param0 - @RemoveLiquiditParams
+   * @param1 - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async removeLiquidity(params: RemoveLiquidityParams, options?: Options) {
@@ -260,7 +297,7 @@ class APWineSDK {
   * @param spender - The contract/entity for which the allowance will be updated.
   * @param tokenAddress - The address of the token contract.
   * @param amount - The amount of the allowance.
-  * @param options - (optional) { autoApprove: boolean}
+  * @param options - @Options
   * @returns - an SDK returnType which contains a transaction and/or an error.
   */
   async updateAllowance(spender: string, tokenAddress: string, amount: BigNumberish, options = { autoApprove: false }) {
@@ -275,7 +312,7 @@ class APWineSDK {
    * Withdraw amount from a future vault.
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
-   * @param autoApprove - Approve automatically in case it's necessary.
+   * @param options - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
@@ -290,7 +327,7 @@ class APWineSDK {
    * Deposit amount to a future vault.
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
-   * @param autoApprove - Approve automatically in case it's necessary.
+   * @param options - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    */
   async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
@@ -303,8 +340,8 @@ class APWineSDK {
 
   /**
    * Swap by controlling the exact amount of tokens passed in.
-   * @param params - SwapParams: from token, to token, amount, slippageTolerance (1 - 100%), deadline data, and an optional future.
-   * @param options - partial SwapOptions: automatic approval.
+   * @param params - @SwapParams with optional slippageTolerance.
+   * @param options - @Options
    * @returns - either an error object, or a ContractTransaction
    */
   async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: Options = { autoApprove: false }) {
@@ -318,8 +355,8 @@ class APWineSDK {
 
   /**
    * Swap by controlling the exact amount of tokens coming out.
-   * @param params - SwapParams: from token, to token, amount, slippageTolerance (1 - 100%), deadline data, and an optional future.
-   * @param options- partial SwapOptions: automatic approval.
+   * @param params - @SwapParams with optional slippageTolerance.
+   * @param options - @Options
    * @returns - either an error object, or a ContractTransaction
    */
   async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: Options = { autoApprove: false }) {
