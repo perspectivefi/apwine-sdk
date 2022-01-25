@@ -181,7 +181,7 @@ class APWineSDK {
    * Fetch the spendable amount by another party(spender) from the owner's tokens on a future vault
    * @param spender - The contract/entity to which the allowance is set.
    * @param tokenAddress - The address of the token contract.
-   * @param account - (optional) The token owner's wallet address
+   * @param account - The token owner's wallet address
    * @returns - The allowance in TokenAmount.
    */
   async allowance(spender: string, tokenAddress: string, account?: string) {
@@ -258,7 +258,7 @@ class APWineSDK {
    * Fetch an aggregated construct of an LPTokenPool
    * @param amm - The target AMM on which the tokenPool exists.
    * @param pairId - The pair id of the token pair, 0 or 1.
-   * @param periodIndex (optional) anything from 0 to the current period index. Default is the current period.
+   * @param periodIndex - anything from 0 to the current period index. Default is the current period.
    * @returns - An aggregated construct with LPTokenPool related data.
    */
   async fetchLPTokenPool(amm:AMM, pairId: PairId, periodIndex?: number) {
