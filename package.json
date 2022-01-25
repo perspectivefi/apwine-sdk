@@ -2,6 +2,12 @@
   "version": "0.0.25",
   "license": "MIT",
   "main": "dist/index.js",
+  "exports": {
+    ".": "dist/index.ts",
+    "./types": "dist/types.ts",
+    "./constants": "dist/constants.ts",
+    "./utils": "dist/utils.index.ts"
+  },
   "typings": "dist/index.d.ts",
   "engines": {
     "node": ">=14"
