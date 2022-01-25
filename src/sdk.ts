@@ -31,6 +31,7 @@ import { swap } from './swap'
 class APWineSDK {
   /**
    * Await this propery to use asynchronous props, like Controller.
+   * @async
    */
   ready: ReturnType<APWineSDK['initialize']> | boolean = false
 
@@ -77,7 +78,7 @@ class APWineSDK {
 
   /**
    * The Controller contract instance. Provides some basic flows, like withdraw/deposit.
-   * @async - Loaded asynchronously.
+   * @async
    */
   Controller: Controller | null = null
 
