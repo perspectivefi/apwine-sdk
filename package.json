@@ -8,6 +8,19 @@
     "./constants": "./dist/constants.ts",
     "./utils": "./dist/utils.index.ts"
   },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "dist/types.d.ts"
+      ],
+      "constants": [
+        "dist/constants.d.ts"
+      ],
+      "utils": [
+        "dist/utils/index.d.ts"
+      ]
+    }
+  },
   "typings": "dist/index.d.ts",
   "engines": {
     "node": ">=14"
