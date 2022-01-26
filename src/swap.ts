@@ -44,6 +44,11 @@ const approveSwap = async (signer: Signer, network: Network, amm: AMM, token: AP
 
 export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, options: Options): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, network, amm, from, to, amount: rawAmount, slippageTolerance, deadline } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const amount = BigNumber.from(rawAmount)
   const router = getAMMRouterContract(signer, network)
   const user = await signer.getAddress()

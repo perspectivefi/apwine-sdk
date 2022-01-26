@@ -9,7 +9,6 @@ import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
 import { Network } from './types'
 
-import config from './config.json'
 import { getNetworkConfig } from './utils/general'
 
 export const getRegistryContract = (

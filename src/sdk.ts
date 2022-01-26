@@ -15,8 +15,9 @@ import {
   updateAllowance,
   approve,
   fetchAllowance,
-  fetchAMMs,
-  isApprovalNecessary
+  isApprovalNecessary,
+  fetchAllAMMs,
+  fetchAMM
 } from './futures'
 import { addLiquidity, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity } from './lp'
 import {
@@ -53,7 +54,7 @@ class APWineSDK {
   /**
    * The signer, necessary for executing transactions.
    */
-  signer: Signer
+  signer: Signer | null = null
 
   /**
    * The default user which will be used in case no user is passed to certain functions.
@@ -111,7 +112,7 @@ class APWineSDK {
       getControllerContract(this.provider, this.network).then(
         controller => (this.Controller = controller)
       ),
-      this.signer.getAddress().then((address) => (this.defaultUser = address))
+      this.signer?.getAddress().then((address) => (this.defaultUser = address))
     ])
 
     this.ready = ready
@@ -159,11 +160,20 @@ class APWineSDK {
   }
 
   /**
+   * Fetch the AMM of the provided FutureVault instance.
+   * @param future - The target Future vault.
+   * @returns - AMM contract instance.
+   */
+  async fetchAMM(future: FutureVault) {
+    return fetchAMM(this.signer ?? this.provider, this.network, future)
+  }
+
+  /**
    * Fetch all AMMs
    * @returns - Promise of an AMM collection.
    */
-  async fetchAMMs() {
-    return fetchAMMs(this.signer, this.network)
+  async fetchtAllAMMs() {
+    return fetchAllAMMs(this.signer ?? this.provider, this.network)
   }
 
   /**
@@ -172,9 +182,10 @@ class APWineSDK {
    * @param tokenAddress - The address of the token contract.
    * @param amount - The amount of tokens to be approved.
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async approve(spender: string, tokenAddress: string, amount: BigNumberish) {
-    return approve(this.signer, spender, tokenAddress, amount)
+    return approve(this.signer!, spender, tokenAddress, amount)
   }
 
   /**
@@ -219,7 +230,7 @@ class APWineSDK {
    * @returns - All FutureVault instances.
    */
   async fetchAllFutureVaults() {
-    return fetchAllFutureVaults(this.provider, this.network)
+    return fetchAllFutureVaults(this.signer ?? this.provider, this.network)
   }
 
   /**
@@ -231,7 +242,13 @@ class APWineSDK {
    * @returns - a boolean value.
    */
   async isApprovalNecessary(tokenAddress: string, amount: BigNumberish, spender: string, account?: string) {
-    return isApprovalNecessary(this.signer, account ?? this.defaultUser, spender, tokenAddress, amount)
+    return isApprovalNecessary(
+      this.signer ?? this.provider,
+      account ?? this.defaultUser,
+      spender,
+      tokenAddress,
+      amount
+    )
   }
 
   /**
@@ -249,9 +266,10 @@ class APWineSDK {
    * @param amm - The AMM on which the approval will happen.
    * @param approval - Boolean value of the approval.
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async approveLPForAll(amm: AMM, approval: boolean = true) {
-    return approveLPForAll(this.signer, amm, approval)
+    return approveLPForAll(this.signer!, amm, approval)
   }
 
   /**
@@ -262,11 +280,12 @@ class APWineSDK {
    * @returns - An aggregated construct with LPTokenPool related data.
    */
   async fetchLPTokenPool(amm:AMM, pairId: PairId, periodIndex?: number) {
-    return fetchLPTokenPool(this.provider, amm, pairId, periodIndex)
+    return fetchLPTokenPool(this.signer ?? this.provider, amm, pairId, periodIndex)
   }
 
   /**
    * Fetch an aggregated construct collection of all LPTokenPools.
+   * @param amm - Fetch all liquidity pools of an AMM.
    * @returns - A collection of aggregated constructs with LPTokenPool related data.
    */
   async fetchAllLPTokenPools(amm: AMM) {
@@ -278,9 +297,10 @@ class APWineSDK {
    * @param0 - @AddLiquidityParams
    * @param1 - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async addLiquidity(params: AddLiquidityParams, options?: Options) {
-    return addLiquidity({ signer: this.signer, ...params }, options)
+    return addLiquidity({ signer: this.signer!, ...params }, options)
   }
 
   /**
@@ -288,9 +308,10 @@ class APWineSDK {
    * @param0 - @RemoveLiquiditParams
    * @param1 - @Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async removeLiquidity(params: RemoveLiquidityParams, options?: Options) {
-    return removeLiquidity({ signer: this.signer, ...params }, options)
+    return removeLiquidity({ signer: this.signer!, ...params }, options)
   }
 
   /**
@@ -298,57 +319,61 @@ class APWineSDK {
   * @param spender - The contract/entity for which the allowance will be updated.
   * @param tokenAddress - The address of the token contract.
   * @param amount - The amount of the allowance.
-  * @param options - @Options
+  * @param options
   * @returns - an SDK returnType which contains a transaction and/or an error.
+  * @transaction -  requires a signer.
   */
   async updateAllowance(spender: string, tokenAddress: string, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove) {
       this.approve(spender, tokenAddress, amount)
     }
 
-    return updateAllowance(this.signer, spender, tokenAddress, amount)
+    return updateAllowance(this.signer!, spender, tokenAddress, amount)
   }
 
   /**
    * Withdraw amount from a future vault.
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
-   * @param options - @Options
+   * @param options
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return withdraw(this.signer, this.network, future, amount)
+    return withdraw(this.signer!, this.network, future, amount)
   }
 
   /**
    * Deposit amount to a future vault.
    * @param future - The future to be withdrawn from.
    * @param amount - The amount to be withdrawn.
-   * @param options - @Options
+   * @param options
    * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
    */
   async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return deposit(this.signer, this.network, future, amount)
+    return deposit(this.signer!, this.network, future, amount)
   }
 
   /**
    * Swap by controlling the exact amount of tokens passed in.
-   * @param params - @SwapParams with optional slippageTolerance.
-   * @param options - @Options
+   * @param params - SwapParams with optional slippageTolerance.
+   * @param options
    * @returns - either an error object, or a ContractTransaction
+   * @transaction -  requires a signer.
    */
   async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: Options = { autoApprove: false }) {
     return swap('IN', {
       slippageTolerance: this.defaultSlippage,
-      signer: this.signer,
+      signer: this.signer!,
       network: this.network,
       ...params
     }, options)
@@ -356,14 +381,15 @@ class APWineSDK {
 
   /**
    * Swap by controlling the exact amount of tokens coming out.
-   * @param params - @SwapParams with optional slippageTolerance.
-   * @param options - @Options
+   * @param params - SwapParams with optional slippageTolerance.
+   * @param options
    * @returns - either an error object, or a ContractTransaction
+   * @transaction -  requires a signer.
    */
   async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: Options = { autoApprove: false }) {
     return swap('OUT', {
       slippageTolerance: this.defaultSlippage,
-      signer: this.signer,
+      signer: this.signer!,
       network: this.network,
       ...params
     }, options)

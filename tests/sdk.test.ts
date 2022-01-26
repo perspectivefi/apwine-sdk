@@ -26,7 +26,7 @@ describe('APWineSDK', () => {
   afterAll(async () => {
     await sdk.ready
 
-    const [amm] = await sdk.fetchAMMs()
+    const [amm] = await sdk.fetchtAllAMMs()
 
     sdk.swapIn({ from: 'Underlying', to: 'PT', amm, amount: parseUnits('20', 18) }, { autoApprove: true })
   })
@@ -60,7 +60,7 @@ describe('APWineSDK', () => {
   it('should be able to fetch all AMMs', async () => {
     await sdk.ready
 
-    const amms = await sdk.fetchAMMs()
+    const amms = await sdk.fetchtAllAMMs()
 
     expect(amms.map((amm) => amm.address)).toEqual([
       '0x8A362AA1c81ED0Ee2Ae677A8b59e0f563DD290Ba',
@@ -74,7 +74,7 @@ describe('APWineSDK', () => {
   it('Should be able to swapIn', async () => {
     await sdk.ready
 
-    const [amm] = await sdk.fetchAMMs()
+    const [amm] = await sdk.fetchtAllAMMs()
 
     const ptAddress = await amm.getPTAddress()
     const token = await getTokencontract(sdk.provider, ptAddress)
@@ -92,7 +92,7 @@ describe('APWineSDK', () => {
   it.skip('Should be able to swapOut', async () => {
     await sdk.ready
 
-    const [amm] = await sdk.fetchAMMs()
+    const [amm] = await sdk.fetchtAllAMMs()
 
     const ptAddress = await amm.getPTAddress()
     const token = await getTokencontract(sdk.provider, ptAddress)
@@ -110,7 +110,7 @@ describe('APWineSDK', () => {
   it('should be able to add liquidity', async() => {
     await sdk.ready
 
-    const [amm] = await sdk.fetchAMMs()
+    const [amm] = await sdk.fetchtAllAMMs()
 
     const user = await signer.getAddress()
     const lp = await sdk.fetchLPTokenPool(amm, 0)
@@ -134,7 +134,7 @@ describe('APWineSDK', () => {
   it('should be able to remove liquidity', async() => {
     await sdk.ready
 
-    const [amm] = await sdk.fetchAMMs()
+    const [amm] = await sdk.fetchtAllAMMs()
 
     const user = await signer.getAddress()
     const lp = await sdk.fetchLPTokenPool(amm, 0)

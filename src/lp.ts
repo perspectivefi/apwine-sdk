@@ -9,6 +9,7 @@ import { PAIR_IDS } from './constants'
 import { PairId, Transaction, Options, SDKFunctionReturnType, TransactionParams, RemoveLiquidityParams, AddLiquidityParams } from './types'
 import { isApprovalNecessary } from './futures'
 import { getPoolTokens } from './utils/swap'
+import { error } from './utils/general'
 
 export const getLPTokenContract = (
   signerOrProvider: Signer | Provider,
@@ -26,6 +27,10 @@ export const isLPApprovedForAll = async (signerOrProvider: Signer | Provider, am
 }
 
 export const approveLPForAll = async (signer: Signer, amm: AMM, approved:boolean): Promise<SDKFunctionReturnType<Transaction>> => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const lpAddress = await amm.getPoolTokenAddress()
 
   const token = getLPTokenContract(signer, lpAddress)
@@ -38,6 +43,10 @@ export const approveLPForAll = async (signer: Signer, amm: AMM, approved:boolean
 
 export const addLiquidity = async (params: AddLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, amm, pairId, amount, maxAmountsIn, account } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
 
   const defaultMaxAmountsIn: [BigNumberish, BigNumberish] = [ethers.constants.MaxInt256, ethers.constants.MaxInt256]
   const [token1, token2] = await getPoolTokens(signer, amm, pairId)
@@ -65,6 +74,10 @@ export const addLiquidity = async (params: AddLiquidityParams & TransactionParam
 
 export const removeLiquidity = async (params: RemoveLiquidityParams & TransactionParams, options: Options = {}): Promise<SDKFunctionReturnType<Transaction>> => {
   const { signer, amm, pairId, amount, minAmountsOut, account } = params
+
+  if (!signer) {
+    return error('NoSigner')
+  }
 
   const defaultMinAmountsOut: [BigNumberish, BigNumberish] = [BigNumber.from('0'), BigNumber.from('0')]
   const user = account ?? await signer.getAddress()

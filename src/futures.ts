@@ -3,7 +3,7 @@ import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/prot
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
-import { AMM, AMM__factory } from '@apwine/amm'
+import { AMM, AMMRegistry__factory, AMM__factory } from '@apwine/amm'
 import {
   getAMMRegistryContract,
   getControllerContract,
@@ -11,8 +11,7 @@ import {
   getRegistryContract,
   getTokencontract
 } from './contracts'
-import { getAddress, getNetworkChainId } from './utils/general'
-import { CHAIN_IDS } from './constants'
+import { error, getAddress, getNetworkChainId, getNetworkConfig } from './utils/general'
 import { FutureAggregate, Network, SDKFunctionReturnType, Transaction } from './types'
 
 export const fetchFutureAggregateFromIndex = async (
@@ -89,13 +88,20 @@ export const fetchAllFutureVaults = async (
   )
 }
 
-export const fetchAMMs = async (signer: Signer, network: Network) => {
-  const ammRegistry = getAMMRegistryContract(signer, network)
-  const vaults = await fetchAllFutureVaults(signer, network)
+export const fetchAMM = async (signerOrProvider: Signer | Provider, network: Network, future: FutureVault) => {
+  const ammRegistry = AMMRegistry__factory.connect(getNetworkConfig(network).AMM_ROUTER, signerOrProvider)
+  const ammAddress = await ammRegistry.getFutureAMMPool(future.address)
+
+  return AMM__factory.connect(ammAddress, signerOrProvider)
+}
+
+export const fetchAllAMMs = async (signerOrProvider: Signer | Provider, network: Network) => {
+  const ammRegistry = getAMMRegistryContract(signerOrProvider, network)
+  const vaults = await fetchAllFutureVaults(signerOrProvider, network)
 
   const ammAddresses = await Promise.all(vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address)))
 
-  return ammAddresses.map((address) => AMM__factory.connect(address, signer))
+  return ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider))
 }
 
 export const withdraw = async (
@@ -104,6 +110,10 @@ export const withdraw = async (
   future: FutureVault,
   amount: BigNumberish
 ): Promise<SDKFunctionReturnType<Transaction>> => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const controller = await getControllerContract(signer, network)
   const transaction = await controller.withdraw(future.address, amount)
 
@@ -111,6 +121,10 @@ export const withdraw = async (
 }
 
 export const approve = async (signer: Signer, spender: string, tokenAddress:string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const token = getTokencontract(signer, tokenAddress)
   const transaction = await token.approve(spender, amount)
 
@@ -127,6 +141,10 @@ export const fetchAllowance = async (signerOrProvider: Signer | Provider, networ
 }
 
 export const updateAllowance = async (signer: Signer, spender: string, tokenAddress: string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const token = getTokencontract(signer, tokenAddress)
   const bignumberAmount = BigNumber.from(amount)
 
@@ -145,6 +163,10 @@ export const deposit = async (
   future: FutureVault,
   amount: BigNumberish
 ): Promise<SDKFunctionReturnType<Transaction>> => {
+  if (!signer) {
+    return error('NoSigner')
+  }
+
   const controller = await getControllerContract(signer, network)
   const transaction = await controller.deposit(future.address, amount)
 

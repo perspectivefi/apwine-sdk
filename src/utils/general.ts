@@ -1,4 +1,4 @@
-import { BytesLike } from 'ethers'
+import { BytesLike, ethers } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
@@ -238,4 +238,10 @@ export const getNetworkChainId = (network : Network) => {
   }
 
   return CHAIN_IDS[network]
+}
+
+export const getNetworkByChainId = (chainId: number): Network => {
+  const network = ethers.providers.getNetwork(chainId).name
+  if (network === 'homestead') return 'mainnet'
+  return network as Network
 }

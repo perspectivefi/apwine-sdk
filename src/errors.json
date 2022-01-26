@@ -1,4 +1,5 @@
 {
+  "NoSigner": "To use transactions, there must be a signer defined.",
   "FaultySlippage": "Slippage tolerance % must be between 1 and 100.",
   "InvalidSwapRoute": "Cannot swap, the route is probably incorrect.",
   "NoSuchToken": "Please provide one of the following tokens: PT, Underlying, FYT"
