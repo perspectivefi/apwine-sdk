@@ -35,7 +35,7 @@ export type Transaction = { transaction?: ContractTransaction }
 export type SDKProps = {
     network: Network
     provider: Provider
-    signer: Signer | null
+    signer?: Signer | null
     defaultSlippage?: number
   }
 

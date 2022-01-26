@@ -34,7 +34,6 @@ describe('APWineSDK', () => {
   beforeEach(() => {
     sdk = new APWineSDK({
       provider,
-      signer,
       network: 'mainnet'
     })
   })

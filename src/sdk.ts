@@ -88,7 +88,7 @@ class APWineSDK {
    * @param param0 - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, signer, provider, defaultSlippage = 0.5 }: SDKProps, options: SDKOptions = { initialize: true }) {
+  constructor({ network, provider, signer = null, defaultSlippage = 0.5 }: SDKProps, options: SDKOptions = { initialize: true }) {
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
     this.defaultSlippage = defaultSlippage
