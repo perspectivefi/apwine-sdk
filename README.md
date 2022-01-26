@@ -156,7 +156,7 @@ const amms = await sdk.fetchAllAMMs()
 
 const transaction = 
     await sdk.swapIn({
-        amm: amms[0]
+        amm: amms[0],
         from: 'FYT',
         to: 'PT'
         amount: 100
