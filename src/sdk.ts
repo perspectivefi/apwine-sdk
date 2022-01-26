@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import { Controller, FutureVault, Registry } from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
-import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams, WithOptional, SwapParams, SDKProps, SDKOptions } from './types'
+import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams, WithOptional, SwapParams, SDKProps, SDKOptions, APWToken } from './types'
 
 import {
   deposit,
@@ -27,7 +27,7 @@ import {
   getRegistryContract
 } from './contracts'
 
-import { swap } from './swap'
+import { fetchSpotPrice, swap } from './swap'
 
 class APWineSDK {
   /**
@@ -361,6 +361,17 @@ class APWineSDK {
     }
 
     return deposit(this.signer!, this.network, future, amount)
+  }
+
+  /**
+   * Fetch spot price of a swap route.
+   * @param future - The target future on which the spot price is being queried.
+   * @param from - APWToken: PT, Underlying or FYT.
+   * @param to - APWToken: PT, Underlying or FYT.
+   * @returns - spot price in BigNumber format.
+   */
+  fetchSpotPrice(future: FutureVault, from: APWToken, to: APWToken) {
+    return fetchSpotPrice(this.provider, this.network, future, from, to)
   }
 
   /**

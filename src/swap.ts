@@ -1,7 +1,8 @@
-import { AMM } from '@apwine/amm'
-import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
+import { AMM, AMMRegistry__factory, AMMRouter__factory } from '@apwine/amm'
+import { FutureVault, FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine/protocol'
 import { BigNumber, BigNumberish, Signer } from 'ethers'
 
+import { Provider } from '@ethersproject/providers'
 import { MINUTE } from './constants'
 import { APWToken, Network, SDKFunctionReturnType, Transaction, Options, TransactionParams, WithNetwork, SwapParams } from './types'
 import { getAMMRouterContract } from './contracts'
@@ -85,6 +86,24 @@ export const swap = async (swapType: 'IN' | 'OUT', params: SwapParamsFull, optio
     )
 
     return { transaction }
+  }
+
+  return error('InvalidSwapRoute')
+}
+
+export const fetchSpotPrice = async (signerOrProvider: Signer | Provider, network: Network, future: FutureVault, from: APWToken, to: APWToken) => {
+  const router = AMMRouter__factory.connect(getNetworkConfig(network).AMM_ROUTER, signerOrProvider)
+  const ammRegistry = AMMRegistry__factory.connect(getNetworkConfig(network).AMM_REGISTRY, signerOrProvider)
+
+  const { poolPath, tokenPath } = findSwapPath(from, to)
+
+  if (poolPath && tokenPath) {
+    const ammAddress = await ammRegistry.getFutureAMMPool(future.address)
+    const sportPrice = await router.getSpotPrice(ammAddress, poolPath, tokenPath)
+
+    return {
+      result: sportPrice
+    }
   }
 
   return error('InvalidSwapRoute')
