@@ -3,10 +3,10 @@
   "license": "MIT",
   "main": "dist/index.js",
   "exports": {
-    ".": "./dist/index.ts",
-    "./types": "./dist/types.ts",
-    "./constants": "./dist/constants.ts",
-    "./utils": "./dist/utils.index.ts"
+    ".": "./dist/index.js",
+    "./types": "./dist/types.js",
+    "./constants": "./dist/constants.js",
+    "./utils": "./dist/utils.index.js"
   },
   "typesVersions": {
     "*": {
