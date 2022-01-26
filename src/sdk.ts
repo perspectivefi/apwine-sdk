@@ -172,7 +172,7 @@ class APWineSDK {
    * Fetch all AMMs
    * @returns - Promise of an AMM collection.
    */
-  async fetchtAllAMMs() {
+  async fetchAllAMMs() {
     return fetchAllAMMs(this.signer ?? this.provider, this.network)
   }
 
