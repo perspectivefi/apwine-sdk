@@ -5,6 +5,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
 import { getTokencontract } from '../src/contracts'
+import { isError } from '../src/utils/general'
 
 jest.setTimeout(30000)
 
@@ -152,5 +153,17 @@ describe('APWineSDK', () => {
     const newBalance = await lp.token.balanceOf(user, lp.id)
 
     expect(balance.gt(newBalance)).toBeTruthy()
+  })
+
+  it('should be able to fetch spot price.', async () => {
+    const vaults = await sdk.fetchAllFutureVaults()
+    const result = await sdk.fetchSpotPrice(vaults[0], 'PT', 'Underlying')
+
+    if (isError(result)) {
+      // eslint-disable-next-line no-undef
+      fail()
+    }
+
+    expect(result.gt(0)).toBeTruthy()
   })
 })

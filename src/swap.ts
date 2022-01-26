@@ -99,11 +99,7 @@ export const fetchSpotPrice = async (signerOrProvider: Signer | Provider, networ
 
   if (poolPath && tokenPath) {
     const ammAddress = await ammRegistry.getFutureAMMPool(future.address)
-    const sportPrice = await router.getSpotPrice(ammAddress, poolPath, tokenPath)
-
-    return {
-      result: sportPrice
-    }
+    return router.getSpotPrice(ammAddress, poolPath, tokenPath)
   }
 
   return error('InvalidSwapRoute')
