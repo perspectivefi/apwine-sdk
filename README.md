@@ -149,14 +149,17 @@ import { howToSwap } from '@apwine/sdk/utils/swap'
 const { namedTokenPath } = howToSwap('FYT', 'Underlying')
 console.log(namedTokenPath)) // ['FYT', 'PT', 'PT', 'Underlying']
 
+// fetch all AMMs 
+const amms = await sdk.fetchAllAMMs()
+
 // swap some tokens
 
 const transaction = 
     await sdk.swapIn({
+        amm: amms[0]
         from: 'FYT',
         to: 'PT'
         amount: 100
-        future: vault[0]
         deadline: (new Date(Date.now() + 60 * 1000)).getTime()
     }, { autoApprove: true })
 
@@ -172,8 +175,10 @@ const transaction =
 <!-- ROADMAP -->
 ## Roadmap
 - [x] Add support for deposit & withdraw
-- [x] Add support for tokenswaps
-- [ ] Do stuff
+- [x] Add support for token swaps
+- [x] Add support for spot price
+- [x] Add support for distinct import routes
+- [ ] Add support for stats fetching
 
 See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
