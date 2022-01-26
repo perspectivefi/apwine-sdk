@@ -101,12 +101,14 @@ import ethers from 'ethers'
 // ...
 
 // You will need a provider for queries.
+// Note: Providers will automatically get wrapped into a MulticallProvider.
 const alchemyProvider = new ethers.providers.AlchemyProvider(
   'kovan',
   #YOUR ALCHEMY API KEY
 )
 
-// and a signer for transactions.
+// You will need a signer for transactions.
+// Note: if you want to fetch data only, this can be omitted.
 const signer = new ethers.Wallet(
   #YOUR PRIVATE KEY,
   alchemyProvider
@@ -138,9 +140,14 @@ const sdk = new APWineSDK({
   const receipt = await sdk.withdraw(vaults[0], 1000)
 }
 
-// get swap information
+```
 
-console.log(sdk.howToSwap('FYT', 'Underlying')) // ['FYT', 'PT', 'PT', 'Underlying']
+```ts
+import { howToSwap } from '@apwine/sdk/utils/swap'
+
+// get swap information
+const { namedTokenPath } = howToSwap('FYT', 'Underlying')
+console.log(namedTokenPath)) // ['FYT', 'PT', 'PT', 'Underlying']
 
 // swap some tokens
 
@@ -154,6 +161,7 @@ const transaction =
     }, { autoApprove: true })
 
 ```
+
 #### For transactions you will need a signer, if you want to just read information, a provider is enough.
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_
  -->
