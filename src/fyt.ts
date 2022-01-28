@@ -7,5 +7,5 @@ import { fetchAllFutureVaults } from './futures'
 export const fetchFYTTokens = async (signerOrProvider: Signer | Provider, network: Network) => {
   const vaults = await fetchAllFutureVaults(signerOrProvider, network)
 
-  return vaults.map((v) => FutureYieldToken__factory.connect(v.address, signerOrProvider))
+  return Promise.all(vaults.map((v) => FutureYieldToken__factory.connect(v.address, signerOrProvider)))
 }
