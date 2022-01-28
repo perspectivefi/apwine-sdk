@@ -1,5 +1,8 @@
 import Graph from 'graphology'
 
+/**
+ * A graph representation of APWine pools
+ */
 const pools = new Graph({ multi: true })
 
 pools.addNode('PT', { index: 0 })

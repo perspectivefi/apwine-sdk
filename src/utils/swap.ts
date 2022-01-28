@@ -6,6 +6,12 @@ import { FutureYieldToken__factory, IERC20__factory, PT__factory } from '@apwine
 import { PairId, APWToken } from '../types'
 import pools from './pools'
 
+/**
+ * Show different representations, of how to swap one token to another.
+ * @param from - APWToken, PT, Underlying or FYT.
+ * @param to - APWToken, PT, Underlying or FYT.
+ * @returns - searchResult, a  tokenPath, and a namedTokenPath.
+ */
 export const findTokenPath = (from: APWToken, to: APWToken) => {
   const graphSearchResult = bidirectional(pools, from, to)
   const namedTokenPath = graphSearchResult?.reduce<string[]>((acc, curr, i, arr) => {
@@ -25,6 +31,11 @@ export const findTokenPath = (from: APWToken, to: APWToken) => {
   }
 }
 
+/**
+ * Show how many pools a swap involves.
+ * @param shortestPath - a token path.
+ * @returns - a pool path.
+ */
 export const findPoolPath = (shortestPath: string[] | null): number[] | null => {
   if (!shortestPath) {
     return null
@@ -43,9 +54,21 @@ export const findSwapPath = (from: APWToken, to: APWToken) => {
   }
 }
 
+/**
+ * Apply slippage to a BigNumber
+ * @param n - the input number
+ * @param slippagePercentage - the percentage applied, can be positive or negative.
+ * @returns - a BigNumber with applied slippage.
+ */
 export const applySlippage = (n: BigNumber, slippagePercentage: number) =>
   n.mul(10000 + slippagePercentage * 100).div(10000)
 
+/**
+ * Shows all necessary information of a swap.
+ * @param from - APWToken, PT, Underlying or FYT.
+ * @param to - APWToken, PT, Underlying or FYT.
+ * @returns - a tokenPath, a namedTokenPath, a poolPath, and a visual representation of the tokenPath.
+ */
 export const howToSwap = (from: APWToken, to: APWToken) => {
   const { tokenPath, namedTokenPath, graphSearchResult } = findTokenPath(from, to)
   const poolPath = findPoolPath(graphSearchResult)
@@ -58,6 +81,13 @@ export const howToSwap = (from: APWToken, to: APWToken) => {
   }
 }
 
+/**
+ * Return the Token contract instances of an amm.
+ * @param signerOrProvider
+ * @param amm - AMM instance on which the pool tokens are required.
+ * @param pairId - token pair id - 0 or 1
+ * @returns - a tuple of token contracts.
+ */
 export const getPoolTokens = async (signerOrProvider: Signer | Provider, amm: AMM, pairId: PairId) => {
   const [ptAddress, underlyingAddress, fytAddress] = await Promise.all([
     amm.getPTAddress(),

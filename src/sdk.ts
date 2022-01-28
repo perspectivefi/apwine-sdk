@@ -294,8 +294,8 @@ class APWineSDK {
 
   /**
    * Add liqidity for the target AMM for a user.
-   * @param0 - @AddLiquidityParams
-   * @param1 - @Options
+   * @param params - AddLiquidityParams
+   * @param Options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    * @transaction -  requires a signer.
    */
@@ -305,8 +305,8 @@ class APWineSDK {
 
   /**
    * Remove liquidity from the target AMM for a user.
-   * @param0 - @RemoveLiquiditParams
-   * @param1 - @Options
+   * @param params - RemoveLiquidityParams
+   * @param options
    * @returns - an SDK returnType which contains a transaction and/or an error.
    * @transaction -  requires a signer.
    */
