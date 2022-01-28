@@ -1,7 +1,7 @@
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
-import { Controller, FutureVault, Registry } from '@apwine/protocol'
+import { Controller, FutureVault, PT__factory, Registry } from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
 import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams, WithOptional, SwapParams, SDKProps, SDKOptions, APWToken } from './types'
 
@@ -28,6 +28,7 @@ import {
 } from './contracts'
 
 import { fetchSpotPrice, swap } from './swap'
+import { fetchFYTTokens } from './fyt'
 
 class APWineSDK {
   /**
@@ -249,6 +250,24 @@ class APWineSDK {
       tokenAddress,
       amount
     )
+  }
+
+  /**
+   * Fetch PT token contract instance of an AMM.
+   * @param amm - The target AMM.
+   * @returns - PT token contract instance.
+   */
+  async fetchPT (amm: AMM) {
+    const ptAddress = await amm.getPTAddress()
+    return PT__factory.connect(ptAddress, this.signer ?? this.provider)
+  }
+
+  /**
+   * Fetch all FYT contract instances.
+   * @returns - a collection of FYT token contract instances.
+   */
+  async fetchAllFYTs() {
+    return fetchFYTTokens(this.signer ?? this.provider, this.network)
   }
 
   /**
