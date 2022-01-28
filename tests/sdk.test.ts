@@ -35,6 +35,7 @@ describe('APWineSDK', () => {
   beforeEach(() => {
     sdk = new APWineSDK({
       provider,
+      signer,
       network: 'mainnet'
     })
   })
@@ -107,7 +108,7 @@ describe('APWineSDK', () => {
     expect(balance.gt(newBalance)).toBeTruthy()
   })
 
-  it.only('should be able to add liquidity', async() => {
+  it('should be able to add liquidity', async() => {
     await sdk.ready
 
     const [amm] = await sdk.fetchAllAMMs()
@@ -123,8 +124,6 @@ describe('APWineSDK', () => {
       amount: parseEther('0.1')
     },
     { autoApprove: true })
-
-    console.log(transaction)
 
     await transaction?.wait()
 
