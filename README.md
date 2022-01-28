@@ -179,6 +179,7 @@ const transaction =
 - [x] Add support for spot price
 - [x] Add support for distinct import routes
 - [ ] Add support for stats fetching
+- [ ] Add support for zaps
 
 See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
