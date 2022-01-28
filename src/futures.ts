@@ -84,9 +84,9 @@ export const fetchAllFutureVaults = async (
     range(0, count).map(index => registry.getFutureVaultAt(index))
   )
 
-  return futureVaultAddresses.map(address =>
+  return Promise.all(futureVaultAddresses.map(address =>
     FutureVault__factory.connect(address, signerOrProvider)
-  )
+  ))
 }
 
 export const fetchAMM = async (signerOrProvider: Signer | Provider, network: Network, future: FutureVault) => {
@@ -102,7 +102,7 @@ export const fetchAllAMMs = async (signerOrProvider: Signer | Provider, network:
 
   const ammAddresses = await Promise.all(vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address)))
 
-  return ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider))
+  return Promise.all(ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider)))
 }
 
 export const withdraw = async (
