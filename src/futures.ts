@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { AToken__factory, FutureVault, FutureVault__factory } from '@apwine/protocol'
+import { AToken__factory, Controller, FutureVault, FutureVault__factory } from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
@@ -30,9 +30,10 @@ export const fetchFutureAggregateFromIndex = async (
 export const fetchFutureAggregateFromAddress = async (
   signerOrProvider: Signer | Provider,
   network: Network,
-  address: string
+  address: string,
+  controller?: Controller | null
 ): Promise<FutureAggregate> => {
-  const controller = await getControllerContract(signerOrProvider, network)
+  const _controller = controller ?? await getControllerContract(signerOrProvider, network)
   const futureContract = getFutureVaultContract(signerOrProvider, address)
   const [
     ibtAddress,
@@ -47,12 +48,12 @@ export const fetchFutureAggregateFromAddress = async (
     futureContract.getPTAddress().then(getAddress),
     futureContract.PERIOD_DURATION(),
     futureContract.PLATFORM_NAME(),
-    controller.isDepositsPaused(address),
-    controller.isWithdrawalsPaused(address),
+    _controller.isDepositsPaused(address),
+    _controller.isWithdrawalsPaused(address),
     futureContract.getNextPeriodIndex()
   ])
 
-  const nextPeriodTimestamp = await controller.getNextPeriodStart(period)
+  const nextPeriodTimestamp = await _controller.getNextPeriodStart(period)
 
   return {
     address,
@@ -108,14 +109,15 @@ export const withdraw = async (
   signer: Signer,
   network: Network,
   future: FutureVault,
-  amount: BigNumberish
+  amount: BigNumberish,
+  controller?: Controller | null
 ): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
-  const controller = await getControllerContract(signer, network)
-  const transaction = await controller.withdraw(future.address, amount)
+  const _controller = controller ?? await getControllerContract(signer, network)
+  const transaction = await _controller.withdraw(future.address, amount)
 
   return { transaction }
 }
@@ -161,14 +163,15 @@ export const deposit = async (
   signer: Signer,
   network: Network,
   future: FutureVault,
-  amount: BigNumberish
+  amount: BigNumberish,
+  controller?: Controller | null
 ): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
 
-  const controller = await getControllerContract(signer, network)
-  const transaction = await controller.deposit(future.address, amount)
+  const _controller = controller ?? await getControllerContract(signer, network)
+  const transaction = await _controller.deposit(future.address, amount)
 
   return { transaction }
 }

@@ -214,7 +214,7 @@ class APWineSDK {
    * @returns - An aggregated object with future related data.
    */
   async fetchFutureAggregateFromAddress(futureAddress: string) {
-    return fetchFutureAggregateFromAddress(this.provider, this.network, futureAddress)
+    return fetchFutureAggregateFromAddress(this.provider, this.network, futureAddress, this.Controller)
   }
 
   /**
@@ -344,7 +344,7 @@ class APWineSDK {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return withdraw(this.signer!, this.network, future, amount)
+    return withdraw(this.signer!, this.network, future, amount, this.Controller)
   }
 
   /**
@@ -360,7 +360,7 @@ class APWineSDK {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return deposit(this.signer!, this.network, future, amount)
+    return deposit(this.signer!, this.network, future, amount, this.Controller)
   }
 
   /**
