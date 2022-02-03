@@ -16,6 +16,9 @@
 
   <h3 align="center">APWine SDK</h3>
 
+
+### This repository is in the early stages. It may be subject to frequent changes, and there may be missing features.
+
 <!--   <p align="center">
     An awesome README template to jumpstart your projects!
     <br />
