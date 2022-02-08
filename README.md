@@ -100,13 +100,13 @@ This is the SDK which lets you interact with the APWine protocol, and the contra
 ```ts
 
 import APWineSDK from '@apwine/sdk'
-import ethers from 'ethers'
+import { ethers, providers } from 'ethers'
 // ...
 
 // You will need a provider for queries.
 // Note: Providers will automatically get wrapped into a MulticallProvider.
-const alchemyProvider = new ethers.providers.AlchemyProvider(
-  'kovan',
+const alchemyProvider = new providers.AlchemyProvider(
+  'mainnet',
   #YOUR ALCHEMY API KEY
 )
 
@@ -122,7 +122,7 @@ const signer = new ethers.Wallet(
 const sdk = new APWineSDK({
   provider: alchemyProvider,
   signer,
-  network: 'kovan'
+  network: 'mainnet'
 })
 
 // Fetch all future vaults, then inspect and withdraw from one
