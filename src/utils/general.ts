@@ -1,4 +1,4 @@
-import { BytesLike, ethers } from 'ethers'
+import { BigNumber, BytesLike, ethers } from 'ethers'
 import { Hexable, keccak256 } from 'ethers/lib/utils'
 import { DataOptions, Bytes } from '@ethersproject/bytes'
 import { Logger } from '@ethersproject/logger'
@@ -158,7 +158,7 @@ function ibanChecksum(address: string): string {
 
   let expanded = address
     .split('')
-    .map(c => {
+    .map((c) => {
       return ibanLookup[c]
     })
     .join('')
@@ -220,21 +220,37 @@ export function getAddress(address: string): string {
   return result
 }
 
-export const error = (type: keyof typeof errors): Error => ({ error: errors[type] })
+export const error = (type: keyof typeof errors): Error => ({
+  error: errors[type]
+})
 
 export const isError = (input: unknown): input is Error => {
   return typeof input === 'object' && input !== null && 'error' in input
 }
 
-export const getNetworkConfig = (network:Network) => {
-  const [name] = Object.entries(CHAIN_IDS).find((entry) => entry.includes(network))! as [keyof typeof CHAIN_IDS, number]
+export const getNetworkConfig = (network: Network) => {
+  if (BigNumber.isBigNumber(network)) {
+    const [name] = Object.entries(CHAIN_IDS).find((entry) =>
+      entry.includes(network.toNumber() as any)
+    )! as [keyof typeof CHAIN_IDS, number]
+
+    return config.networks[name]
+  }
+
+  const [name] = Object.entries(CHAIN_IDS).find((entry) =>
+    entry.includes(network)
+  )! as [keyof typeof CHAIN_IDS, number]
 
   return config.networks[name]
 }
 
-export const getNetworkChainId = (network : Network) => {
+export const getNetworkChainId = (network: Network) => {
   if (typeof network === 'number') {
     return network
+  }
+
+  if (BigNumber.isBigNumber(network)) {
+    return network.toNumber()
   }
 
   return CHAIN_IDS[network]

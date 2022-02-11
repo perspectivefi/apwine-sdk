@@ -1,5 +1,10 @@
 import { BigNumber, BigNumberish, Signer } from 'ethers'
-import { AToken__factory, Controller, FutureVault, FutureVault__factory } from '@apwine/protocol'
+import {
+  AToken__factory,
+  Controller,
+  FutureVault,
+  FutureVault__factory
+} from '@apwine/protocol'
 import { Provider } from '@ethersproject/providers'
 import range from 'ramda/src/range'
 import { Token, TokenAmount } from '@uniswap/sdk'
@@ -11,8 +16,18 @@ import {
   getRegistryContract,
   getTokencontract
 } from './contracts'
-import { error, getAddress, getNetworkChainId, getNetworkConfig } from './utils/general'
-import { FutureAggregate, Network, SDKFunctionReturnType, Transaction } from './types'
+import {
+  error,
+  getAddress,
+  getNetworkChainId,
+  getNetworkConfig
+} from './utils/general'
+import {
+  FutureAggregate,
+  Network,
+  SDKFunctionReturnType,
+  Transaction
+} from './types'
 
 export const fetchFutureAggregateFromIndex = async (
   signerOrProvider: Signer | Provider,
@@ -24,7 +39,11 @@ export const fetchFutureAggregateFromIndex = async (
     await registry.getFutureVaultAt(BigNumber.from(index))
   )
 
-  return fetchFutureAggregateFromAddress(signerOrProvider, network, futureAddress)
+  return fetchFutureAggregateFromAddress(
+    signerOrProvider,
+    network,
+    futureAddress
+  )
 }
 
 export const fetchFutureAggregateFromAddress = async (
@@ -33,7 +52,8 @@ export const fetchFutureAggregateFromAddress = async (
   address: string,
   controller?: Controller | null
 ): Promise<FutureAggregate> => {
-  const _controller = controller ?? await getControllerContract(signerOrProvider, network)
+  const _controller =
+    controller ?? (await getControllerContract(signerOrProvider, network))
   const futureContract = getFutureVaultContract(signerOrProvider, address)
   const [
     ibtAddress,
@@ -68,9 +88,17 @@ export const fetchFutureAggregateFromAddress = async (
   }
 }
 
-export const fetchAllFutureAggregates = async (signerOrProvider: Signer | Provider, network: Network, amm: AMM) => {
+export const fetchAllFutureAggregates = async (
+  signerOrProvider: Signer | Provider,
+  network: Network,
+  amm: AMM
+) => {
   const currentPeriodIndex = (await amm.currentPeriodIndex()).toNumber()
-  return Promise.all(range(0, currentPeriodIndex).map((periodIndex) => fetchFutureAggregateFromIndex(signerOrProvider, network, periodIndex)))
+  return Promise.all(
+    range(0, currentPeriodIndex).map((periodIndex) =>
+      fetchFutureAggregateFromIndex(signerOrProvider, network, periodIndex)
+    )
+  )
 }
 
 export const fetchAllFutureVaults = async (
@@ -81,28 +109,46 @@ export const fetchAllFutureVaults = async (
   const count = (await registry.futureVaultCount()).toNumber()
 
   const futureVaultAddresses = await Promise.all(
-    range(0, count).map(index => registry.getFutureVaultAt(index))
+    range(0, count).map((index) => registry.getFutureVaultAt(index))
   )
 
-  return Promise.all(futureVaultAddresses.map(address =>
-    FutureVault__factory.connect(address, signerOrProvider)
-  ))
+  return Promise.all(
+    futureVaultAddresses.map((address) =>
+      FutureVault__factory.connect(address, signerOrProvider)
+    )
+  )
 }
 
-export const fetchAMM = async (signerOrProvider: Signer | Provider, network: Network, future: FutureVault) => {
-  const ammRegistry = AMMRegistry__factory.connect(getNetworkConfig(network).AMM_ROUTER, signerOrProvider)
+export const fetchAMM = async (
+  signerOrProvider: Signer | Provider,
+  network: Network,
+  future: FutureVault
+) => {
+  const ammRegistry = AMMRegistry__factory.connect(
+    getNetworkConfig(network).AMM_ROUTER,
+    signerOrProvider
+  )
   const ammAddress = await ammRegistry.getFutureAMMPool(future.address)
 
   return AMM__factory.connect(ammAddress, signerOrProvider)
 }
 
-export const fetchAllAMMs = async (signerOrProvider: Signer | Provider, network: Network) => {
+export const fetchAllAMMs = async (
+  signerOrProvider: Signer | Provider,
+  network: Network
+) => {
   const ammRegistry = getAMMRegistryContract(signerOrProvider, network)
   const vaults = await fetchAllFutureVaults(signerOrProvider, network)
 
-  const ammAddresses = await Promise.all(vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address)))
+  const ammAddresses = await Promise.all(
+    vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address))
+  )
 
-  return Promise.all(ammAddresses.map((address) => AMM__factory.connect(address, signerOrProvider)))
+  return Promise.all(
+    ammAddresses.map((address) =>
+      AMM__factory.connect(address, signerOrProvider)
+    )
+  )
 }
 
 export const withdraw = async (
@@ -116,13 +162,19 @@ export const withdraw = async (
     return error('NoSigner')
   }
 
-  const _controller = controller ?? await getControllerContract(signer, network)
+  const _controller =
+    controller ?? (await getControllerContract(signer, network))
   const transaction = await _controller.withdraw(future.address, amount)
 
   return { transaction }
 }
 
-export const approve = async (signer: Signer, spender: string, tokenAddress:string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+export const approve = async (
+  signer: Signer,
+  spender: string,
+  tokenAddress: string,
+  amount: BigNumberish
+): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
@@ -133,7 +185,13 @@ export const approve = async (signer: Signer, spender: string, tokenAddress:stri
   return { transaction }
 }
 
-export const fetchAllowance = async (signerOrProvider: Signer | Provider, network: Network, owner: string, spender: string, tokenAddress: string) => {
+export const fetchAllowance = async (
+  signerOrProvider: Signer | Provider,
+  network: Network,
+  owner: string,
+  spender: string,
+  tokenAddress: string
+) => {
   const t = getTokencontract(signerOrProvider, tokenAddress)
   const allowance = await t.allowance(owner, spender)
   const decimals = await t.decimals()
@@ -142,7 +200,12 @@ export const fetchAllowance = async (signerOrProvider: Signer | Provider, networ
   return new TokenAmount(token, allowance.toBigInt())
 }
 
-export const updateAllowance = async (signer: Signer, spender: string, tokenAddress: string, amount: BigNumberish): Promise<SDKFunctionReturnType<Transaction>> => {
+export const updateAllowance = async (
+  signer: Signer,
+  spender: string,
+  tokenAddress: string,
+  amount: BigNumberish
+): Promise<SDKFunctionReturnType<Transaction>> => {
   if (!signer) {
     return error('NoSigner')
   }
@@ -170,13 +233,20 @@ export const deposit = async (
     return error('NoSigner')
   }
 
-  const _controller = controller ?? await getControllerContract(signer, network)
+  const _controller =
+    controller ?? (await getControllerContract(signer, network))
   const transaction = await _controller.deposit(future.address, amount)
 
   return { transaction }
 }
 
-export const isApprovalNecessary = async (signerOrProvider: Signer | Provider, account: string, spender: string, tokenAddress:string, amount: BigNumberish) => {
+export const isApprovalNecessary = async (
+  signerOrProvider: Signer | Provider,
+  account: string,
+  spender: string,
+  tokenAddress: string,
+  amount: BigNumberish
+) => {
   const token = AToken__factory.connect(tokenAddress, signerOrProvider)
 
   const allowance = await token.allowance(account, spender)
