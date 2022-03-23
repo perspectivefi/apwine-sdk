@@ -1,9 +1,26 @@
 import { BigNumberish, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
-import { Controller, FutureVault, PT__factory, Registry } from '@apwine/protocol'
+import {
+  Controller,
+  FutureVault,
+  FutureVault__factory,
+  PT__factory,
+  Registry
+} from '@apwine/protocol'
 import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
-import { Network, PairId, Options, AddLiquidityParams, RemoveLiquidityParams, WithOptional, SwapParams, SDKProps, SDKOptions, APWToken } from './types'
+import {
+  Network,
+  PairId,
+  Options,
+  AddLiquidityParams,
+  RemoveLiquidityParams,
+  WithOptional,
+  SwapParams,
+  SDKProps,
+  SDKOptions,
+  APWToken
+} from './types'
 
 import {
   deposit,
@@ -19,7 +36,14 @@ import {
   fetchAllAMMs,
   fetchAMM
 } from './futures'
-import { addLiquidity, approveLPForAll, fetchAllLPTokenPools, fetchLPTokenPool, isLPApprovedForAll, removeLiquidity } from './lp'
+import {
+  addLiquidity,
+  approveLPForAll,
+  fetchAllLPTokenPools,
+  fetchLPTokenPool,
+  isLPApprovedForAll,
+  removeLiquidity
+} from './lp'
 import {
   getAMMRegistryContract,
   getAMMRouterContract,
@@ -84,12 +108,21 @@ class APWineSDK {
    */
   Controller: Controller | null = null
 
+  /** Get a target FutureVault contract instance.
+   * @param address - address of the desired Future.
+   * @returns - FutureVault instance on the given address
+   */
+  FutureVault: (address: string) => FutureVault
+
   /**
    *Creates a new APWine SDK instance.
    * @param param0 - An object containing a network a spender,  a provider
      and an optional signer.
    */
-  constructor({ network, provider, signer = null, defaultSlippage = 0.5 }: SDKProps, options: SDKOptions = { initialize: true }) {
+  constructor(
+    { network, provider, signer = null, defaultSlippage = 0.5 }: SDKProps,
+    options: SDKOptions = { initialize: true }
+  ) {
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
     this.defaultSlippage = defaultSlippage
@@ -98,6 +131,9 @@ class APWineSDK {
     this.AMMRegistry = getAMMRegistryContract(provider, network)
     this.Registry = getRegistryContract(provider, network)
     this.Router = getAMMRouterContract(provider, network)
+
+    this.FutureVault = (address: string) =>
+      FutureVault__factory.connect(address, this.signer ?? this.provider)
 
     if (options.initialize) {
       this.initialize()
@@ -111,7 +147,7 @@ class APWineSDK {
   async initialize() {
     const ready = Promise.all([
       getControllerContract(this.provider, this.network).then(
-        controller => (this.Controller = controller)
+        (controller) => (this.Controller = controller)
       ),
       this.signer?.getAddress().then((address) => (this.defaultUser = address))
     ])
@@ -124,12 +160,12 @@ class APWineSDK {
    * Update default user on an existing APWineSDK instance.
    * @param address - The address of the new user.
    */
-  updateDefaultUser(address:string) {
+  updateDefaultUser(address: string) {
     this.defaultUser = address
   }
 
   /**
-  * Updates the provider on an existing APWineSDK instance.
+   * Updates the provider on an existing APWineSDK instance.
    * @param provider - A provider to connect to the ethereum blockchain.
    */
   updateProvider(provider: Provider) {
@@ -145,7 +181,7 @@ class APWineSDK {
   }
 
   /**
-  * Updates the signer on an existing APWineSDK instance.
+   * Updates the signer on an existing APWineSDK instance.
    * @param signer - A transaction signer.
    */
   updateSigner(signer: Signer) {
@@ -197,7 +233,13 @@ class APWineSDK {
    * @returns - The allowance in TokenAmount.
    */
   async allowance(spender: string, tokenAddress: string, account?: string) {
-    return fetchAllowance(this.provider, this.network, account ?? this.defaultUser, spender, tokenAddress)
+    return fetchAllowance(
+      this.provider,
+      this.network,
+      account ?? this.defaultUser,
+      spender,
+      tokenAddress
+    )
   }
 
   /**
@@ -215,14 +257,19 @@ class APWineSDK {
    * @returns - An aggregated object with future related data.
    */
   async fetchFutureAggregateFromAddress(futureAddress: string) {
-    return fetchFutureAggregateFromAddress(this.provider, this.network, futureAddress, this.Controller)
+    return fetchFutureAggregateFromAddress(
+      this.provider,
+      this.network,
+      futureAddress,
+      this.Controller
+    )
   }
 
   /**
    * Fetch all aggregated Future constructs on an AMM.
    * @returns - A collection of aggregated objects with future related data
    */
-  async fetchAllFutureAggregates(amm:AMM) {
+  async fetchAllFutureAggregates(amm: AMM) {
     return fetchAllFutureAggregates(this.provider, this.network, amm)
   }
 
@@ -242,7 +289,12 @@ class APWineSDK {
    * @param account - The owner of the tokens.
    * @returns - a boolean value.
    */
-  async isApprovalNecessary(tokenAddress: string, amount: BigNumberish, spender: string, account?: string) {
+  async isApprovalNecessary(
+    tokenAddress: string,
+    amount: BigNumberish,
+    spender: string,
+    account?: string
+  ) {
     return isApprovalNecessary(
       this.signer ?? this.provider,
       account ?? this.defaultUser,
@@ -257,7 +309,7 @@ class APWineSDK {
    * @param amm - The target AMM.
    * @returns - PT token contract instance.
    */
-  async fetchPT (amm: AMM) {
+  async fetchPT(amm: AMM) {
     const ptAddress = await amm.getPTAddress()
     return PT__factory.connect(ptAddress, this.signer ?? this.provider)
   }
@@ -298,8 +350,13 @@ class APWineSDK {
    * @param periodIndex - anything from 0 to the current period index. Default is the current period.
    * @returns - An aggregated construct with LPTokenPool related data.
    */
-  async fetchLPTokenPool(amm:AMM, pairId: PairId, periodIndex?: number) {
-    return fetchLPTokenPool(this.signer ?? this.provider, amm, pairId, periodIndex)
+  async fetchLPTokenPool(amm: AMM, pairId: PairId, periodIndex?: number) {
+    return fetchLPTokenPool(
+      this.signer ?? this.provider,
+      amm,
+      pairId,
+      periodIndex
+    )
   }
 
   /**
@@ -334,15 +391,20 @@ class APWineSDK {
   }
 
   /**
-  * Update the spendable amount by another party(spender) from the owner's tokens on a future vault.
-  * @param spender - The contract/entity for which the allowance will be updated.
-  * @param tokenAddress - The address of the token contract.
-  * @param amount - The amount of the allowance.
-  * @param options
-  * @returns - an SDK returnType which contains a transaction and/or an error.
-  * @transaction -  requires a signer.
-  */
-  async updateAllowance(spender: string, tokenAddress: string, amount: BigNumberish, options = { autoApprove: false }) {
+   * Update the spendable amount by another party(spender) from the owner's tokens on a future vault.
+   * @param spender - The contract/entity for which the allowance will be updated.
+   * @param tokenAddress - The address of the token contract.
+   * @param amount - The amount of the allowance.
+   * @param options
+   * @returns - an SDK returnType which contains a transaction and/or an error.
+   * @transaction -  requires a signer.
+   */
+  async updateAllowance(
+    spender: string,
+    tokenAddress: string,
+    amount: BigNumberish,
+    options = { autoApprove: false }
+  ) {
     if (options.autoApprove) {
       this.approve(spender, tokenAddress, amount)
     }
@@ -358,7 +420,11 @@ class APWineSDK {
    * @returns - an SDK returnType which contains a transaction and/or an error.
    * @transaction -  requires a signer.
    */
-  async withdraw(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+  async withdraw(
+    future: FutureVault,
+    amount: BigNumberish,
+    options = { autoApprove: false }
+  ) {
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
@@ -374,7 +440,11 @@ class APWineSDK {
    * @returns - an SDK returnType which contains a transaction and/or an error.
    * @transaction -  requires a signer.
    */
-  async deposit(future: FutureVault, amount: BigNumberish, options = { autoApprove: false }) {
+  async deposit(
+    future: FutureVault,
+    amount: BigNumberish,
+    options = { autoApprove: false }
+  ) {
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
@@ -400,13 +470,20 @@ class APWineSDK {
    * @returns - either an error object, or a ContractTransaction
    * @transaction -  requires a signer.
    */
-  async swapIn(params: WithOptional<SwapParams, 'slippageTolerance' >, options: Options = { autoApprove: false }) {
-    return swap('IN', {
-      slippageTolerance: this.defaultSlippage,
-      signer: this.signer!,
-      network: this.network,
-      ...params
-    }, options)
+  async swapIn(
+    params: WithOptional<SwapParams, 'slippageTolerance'>,
+    options: Options = { autoApprove: false }
+  ) {
+    return swap(
+      'IN',
+      {
+        slippageTolerance: this.defaultSlippage,
+        signer: this.signer!,
+        network: this.network,
+        ...params
+      },
+      options
+    )
   }
 
   /**
@@ -416,13 +493,20 @@ class APWineSDK {
    * @returns - either an error object, or a ContractTransaction
    * @transaction -  requires a signer.
    */
-  async swapOut(params: WithOptional<SwapParams, 'slippageTolerance'>, options: Options = { autoApprove: false }) {
-    return swap('OUT', {
-      slippageTolerance: this.defaultSlippage,
-      signer: this.signer!,
-      network: this.network,
-      ...params
-    }, options)
+  async swapOut(
+    params: WithOptional<SwapParams, 'slippageTolerance'>,
+    options: Options = { autoApprove: false }
+  ) {
+    return swap(
+      'OUT',
+      {
+        slippageTolerance: this.defaultSlippage,
+        signer: this.signer!,
+        network: this.network,
+        ...params
+      },
+      options
+    )
   }
 }
 
