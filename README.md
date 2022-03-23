@@ -218,7 +218,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-APWine Finance - [@APWineFinance](https://twitter.com/APWineFinance) - support@apwine.com
+APWine Finance - [@APWineFinance](https://twitter.com/APWineFinance) - contact@apwine.fi
 
 Project Link: [https://github.com/APWine/apwine-sdk](https://github.com/APWine/apwine-sdk)
 
