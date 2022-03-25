@@ -8,7 +8,7 @@ import {
   PT__factory,
   Registry
 } from '@apwine/protocol'
-import { AMM, AMMRegistry, AMMRouter } from '@apwine/amm'
+import { AMM, AMMRegistry, AMMRouterV1 } from '@apwine/amm'
 import {
   Network,
   PairId,
@@ -100,7 +100,7 @@ class APWineSDK {
   /**
    * The AMM Router contract instance. Simplifies some processes through AMMs.
    */
-  Router: AMMRouter
+  Router: AMMRouterV1
 
   /**
    * The Controller contract instance. Provides some basic flows, like withdraw/deposit.
