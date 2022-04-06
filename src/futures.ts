@@ -80,6 +80,7 @@ export const fetchFutureAggregateFromAddress = async (
 
   return {
     amm,
+    vault: futureContract,
     address,
     ibtAddress,
     ptAddress,

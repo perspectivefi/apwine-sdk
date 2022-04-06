@@ -2,6 +2,7 @@ import { BigNumber, BigNumberish, ContractTransaction, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { AMM } from '@apwine/amm'
 import { APW_TOKENS, PAIR_IDS, CHAIN_IDS } from './constants'
+import { FutureVault } from '@apwine/protocol'
 
 export type Error = {
   error?: string
@@ -48,6 +49,7 @@ export type SDKOptions = {
 
 export type FutureAggregate = {
   amm: AMM
+  vault: FutureVault
   address: string
   ibtAddress: string
   ptAddress: string
