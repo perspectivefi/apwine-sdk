@@ -95,7 +95,7 @@ export const fetchAllFutureAggregates = async (
 ) => {
   const currentPeriodIndex = (await amm.currentPeriodIndex()).toNumber()
   return Promise.all(
-    range(0, currentPeriodIndex).map((periodIndex) =>
+    range(0, currentPeriodIndex).map(periodIndex =>
       fetchFutureAggregateFromIndex(signerOrProvider, network, periodIndex)
     )
   )
@@ -109,11 +109,11 @@ export const fetchAllFutureVaults = async (
   const count = (await registry.futureVaultCount()).toNumber()
 
   const futureVaultAddresses = await Promise.all(
-    range(0, count).map((index) => registry.getFutureVaultAt(index))
+    range(0, count).map(index => registry.getFutureVaultAt(index))
   )
 
   return Promise.all(
-    futureVaultAddresses.map((address) =>
+    futureVaultAddresses.map(address =>
       FutureVault__factory.connect(address, signerOrProvider)
     )
   )
@@ -125,7 +125,7 @@ export const fetchAMM = async (
   future: FutureVault
 ) => {
   const ammRegistry = AMMRegistry__factory.connect(
-    getNetworkConfig(network).AMM_ROUTER,
+    getNetworkConfig(network).AMM_REGISTRY,
     signerOrProvider
   )
   const ammAddress = await ammRegistry.getFutureAMMPool(future.address)
@@ -141,13 +141,11 @@ export const fetchAllAMMs = async (
   const vaults = await fetchAllFutureVaults(signerOrProvider, network)
 
   const ammAddresses = await Promise.all(
-    vaults.map((vault) => ammRegistry.getFutureAMMPool(vault.address))
+    vaults.map(vault => ammRegistry.getFutureAMMPool(vault.address))
   )
 
   return Promise.all(
-    ammAddresses.map((address) =>
-      AMM__factory.connect(address, signerOrProvider)
-    )
+    ammAddresses.map(address => AMM__factory.connect(address, signerOrProvider))
   )
 }
 
