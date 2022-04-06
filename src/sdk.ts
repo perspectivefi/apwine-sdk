@@ -128,9 +128,9 @@ class APWineSDK {
     this.defaultSlippage = defaultSlippage
     this.network = network
 
-    this.AMMRegistry = getAMMRegistryContract(provider, network)
-    this.Registry = getRegistryContract(provider, network)
-    this.Router = getAMMRouterContract(provider, network)
+    this.AMMRegistry = getAMMRegistryContract(signer ?? provider, network)
+    this.Registry = getRegistryContract(signer ?? provider, network)
+    this.Router = getAMMRouterContract(signer ?? provider, network)
 
     this.FutureVault = (address: string) =>
       FutureVault__factory.connect(address, this.signer ?? this.provider)
@@ -146,7 +146,7 @@ class APWineSDK {
    */
   async initialize() {
     const ready = Promise.all([
-      getControllerContract(this.provider, this.network).then(
+      getControllerContract(this.signer ?? this.provider, this.network).then(
         (controller) => (this.Controller = controller)
       ),
       this.signer?.getAddress().then((address) => (this.defaultUser = address))
