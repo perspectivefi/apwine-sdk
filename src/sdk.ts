@@ -3,6 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
 import {
   Controller,
+  Controller__factory,
   FutureVault,
   FutureVault__factory,
   PT__factory,
@@ -186,6 +187,12 @@ class APWineSDK {
    */
   updateSigner(signer: Signer) {
     this.signer = signer
+
+    this.Router = getAMMRouterContract(signer, this.network)
+    this.Controller = Controller__factory.connect(
+      this.Controller!.address,
+      signer
+    )
   }
 
   /**
