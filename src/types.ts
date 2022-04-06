@@ -47,9 +47,10 @@ export type SDKOptions = {
 }
 
 export type FutureAggregate = {
+  amm: AMM
   address: string
   ibtAddress: string
-  apwibtAddress: string
+  ptAddress: string
   period: BigNumber
   platform: string
   depositsPaused: boolean
