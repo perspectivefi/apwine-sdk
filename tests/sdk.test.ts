@@ -43,6 +43,34 @@ describe('APWineSDK', () => {
       })
     })
 
+    it('should keep track of the signer and provider', async () => {
+      await sdk.ready
+
+      sdk.useSigner()
+      expect(sdk.signerOrProvider).toBe(sdk.signer)
+
+      sdk.useProvider()
+      expect(sdk.signerOrProvider).toBe(sdk.provider)
+    })
+
+    it.only('should set the signer or the provider to all contract instances, on change.', async () => {
+      await sdk.ready
+
+      sdk.useProvider()
+
+      expect(sdk.AMMRegistry.signer).toBeNull()
+      expect(sdk.Registry.signer).toBeNull()
+      expect(sdk.Controller?.signer).toBeNull()
+      expect(sdk.Router.signer).toBeNull()
+
+      sdk.useSigner()
+
+      expect(sdk.AMMRegistry.signer).toBe(sdk.signer)
+      expect(sdk.Registry.signer).toBe(sdk.signer)
+      expect(sdk.Controller?.signer).toBe(sdk.signer)
+      expect(sdk.Router.signer).toBe(sdk.signer)
+    })
+
     it('should have the network set', async () => {
       expect(sdk.network).toBe('mainnet')
     })
