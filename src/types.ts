@@ -1,8 +1,8 @@
 import { BigNumber, BigNumberish, ContractTransaction, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { AMM } from '@apwine/amm'
-import { APW_TOKENS, PAIR_IDS, CHAIN_IDS } from './constants'
 import { FutureVault } from '@apwine/protocol'
+import { APW_TOKENS, PAIR_IDS, CHAIN_IDS } from './constants'
 
 export type Error = {
   error?: string
@@ -35,6 +35,15 @@ export type Pool = [APWToken, APWToken]
 
 export type SDKFunctionReturnType<T> = Error & T
 export type Transaction = { transaction?: ContractTransaction }
+
+export type RequireExclusive<T, Keys extends keyof T = keyof T> = Pick<
+  T,
+  Exclude<keyof T, Keys>
+> &
+  {
+    [K in Keys]-?: Required<Pick<T, K>> &
+      Partial<Record<Exclude<Keys, K>, undefined>>
+  }[Keys]
 
 export type SDKProps = {
   network: Network

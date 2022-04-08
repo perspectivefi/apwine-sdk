@@ -80,7 +80,12 @@ class APWineSDK {
   /**
    * The signer, necessary for executing transactions.
    */
-  signer: Signer | null = null
+  signer: Signer | null
+
+  /**
+   * Keep track of whether the signer or the provider is being used, when creating contract instances.
+   */
+  signerOrProvider: Signer | Provider
 
   /**
    * The default user which will be used in case no user is passed to certain functions.
@@ -124,17 +129,26 @@ class APWineSDK {
     { network, provider, signer = null, defaultSlippage = 0.5 }: SDKProps,
     options: SDKOptions = { initialize: true }
   ) {
+    this.provider = provider
+
+    if (signer) {
+      this.signer = signer
+    }
+
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
+
+    this.signerOrProvider = this.signer ?? this.provider
+
     this.defaultSlippage = defaultSlippage
     this.network = network
 
-    this.AMMRegistry = getAMMRegistryContract(signer ?? provider, network)
-    this.Registry = getRegistryContract(signer ?? provider, network)
-    this.Router = getAMMRouterContract(signer ?? provider, network)
+    this.AMMRegistry = getAMMRegistryContract(this.signerOrProvider, network)
+    this.Registry = getRegistryContract(this.signerOrProvider, network)
+    this.Router = getAMMRouterContract(this.signerOrProvider, network)
 
     this.FutureVault = (address: string) =>
-      FutureVault__factory.connect(address, this.signer ?? this.provider)
+      FutureVault__factory.connect(address, this.signerOrProvider)
 
     if (options.initialize) {
       this.initialize()
@@ -147,7 +161,7 @@ class APWineSDK {
    */
   async initialize() {
     const ready = Promise.all([
-      getControllerContract(this.signer ?? this.provider, this.network).then(
+      getControllerContract(this.signerOrProvider, this.network).then(
         (controller) => (this.Controller = controller)
       ),
       this.signer?.getAddress().then((address) => (this.defaultUser = address))
@@ -155,6 +169,70 @@ class APWineSDK {
 
     this.ready = ready
     return ready
+  }
+
+  /**
+   * Switch to signer usage on the sdk instance.
+   * This is necessary if transactions are to be executed.
+   */
+  useSigner() {
+    if (!this.signer) {
+      console.error(
+        'Error: signer is not provider, please use `updateSigner` to add a singer instance.'
+      )
+
+      return
+    }
+
+    if (!this.Controller) {
+      console.error(
+        "Error: The Controller instance hasn't been loaded yet. Wait for sdk.ready"
+      )
+
+      return
+    }
+
+    this.signerOrProvider = this.signer
+
+    this.AMMRegistry = getAMMRegistryContract(
+      this.signerOrProvider,
+      this.network
+    )
+    this.Registry = getRegistryContract(this.signerOrProvider, this.network)
+    this.Router = getAMMRouterContract(this.signerOrProvider, this.network)
+
+    this.Controller = Controller__factory.connect(
+      this.Controller!.address,
+      this.signerOrProvider
+    )
+  }
+
+  /**
+   * Switch to provider usage on the sdk instance.
+   * This is useful, when the priority is fetching. (utilizing MulticallProvider)
+   */
+  useProvider() {
+    if (!this.Controller) {
+      console.error(
+        "Error: The Controller instance hasn't been loaded yet. Wait for sdk.ready"
+      )
+
+      return
+    }
+
+    this.signerOrProvider = this.provider
+
+    this.AMMRegistry = getAMMRegistryContract(
+      this.signerOrProvider,
+      this.network
+    )
+    this.Registry = getRegistryContract(this.signerOrProvider, this.network)
+    this.Router = getAMMRouterContract(this.signerOrProvider, this.network)
+
+    this.Controller = Controller__factory.connect(
+      this.Controller!.address,
+      this.signerOrProvider
+    )
   }
 
   /**
@@ -169,8 +247,12 @@ class APWineSDK {
    * Updates the provider on an existing APWineSDK instance.
    * @param provider - A provider to connect to the ethereum blockchain.
    */
-  updateProvider(provider: Provider) {
+  updateProvider(provider: Provider, use: boolean = false) {
     this.provider = provider
+
+    if (use) {
+      this.useProvider()
+    }
   }
 
   /**
@@ -185,14 +267,12 @@ class APWineSDK {
    * Updates the signer on an existing APWineSDK instance.
    * @param signer - A transaction signer.
    */
-  updateSigner(signer: Signer) {
+  updateSigner(signer: Signer, use: boolean = true) {
     this.signer = signer
 
-    this.Router = getAMMRouterContract(signer, this.network)
-    this.Controller = Controller__factory.connect(
-      this.Controller!.address,
-      signer
-    )
+    if (use) {
+      this.useSigner()
+    }
   }
 
   /**
@@ -209,7 +289,7 @@ class APWineSDK {
    * @returns - AMM contract instance.
    */
   async fetchAMM(future: FutureVault) {
-    return fetchAMM(this.signer ?? this.provider, this.network, future)
+    return fetchAMM(this.signerOrProvider, this.network, future)
   }
 
   /**
@@ -217,7 +297,7 @@ class APWineSDK {
    * @returns - Promise of an AMM collection.
    */
   async fetchAllAMMs() {
-    return fetchAllAMMs(this.signer ?? this.provider, this.network)
+    return fetchAllAMMs(this.signerOrProvider, this.network)
   }
 
   /**
@@ -229,7 +309,14 @@ class APWineSDK {
    * @transaction -  requires a signer.
    */
   async approve(spender: string, tokenAddress: string, amount: BigNumberish) {
-    return approve(this.signer!, spender, tokenAddress, amount)
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
+    return approve(this.signer, spender, tokenAddress, amount)
   }
 
   /**
@@ -255,7 +342,11 @@ class APWineSDK {
    * @returns - An aggregated object with future related data.
    */
   async fetchFutureAggregateFromIndex(index: number) {
-    return fetchFutureAggregateFromIndex(this.provider, this.network, index)
+    return fetchFutureAggregateFromIndex(
+      this.signerOrProvider,
+      this.network,
+      index
+    )
   }
 
   /**
@@ -265,7 +356,7 @@ class APWineSDK {
    */
   async fetchFutureAggregateFromAddress(futureAddress: string) {
     return fetchFutureAggregateFromAddress(
-      this.provider,
+      this.signerOrProvider,
       this.network,
       futureAddress,
       this.Controller
@@ -277,7 +368,7 @@ class APWineSDK {
    * @returns - A collection of aggregated objects with future related data
    */
   async fetchAllFutureAggregates(amm: AMM) {
-    return fetchAllFutureAggregates(this.provider, this.network, amm)
+    return fetchAllFutureAggregates(this.signerOrProvider, this.network, amm)
   }
 
   /**
@@ -285,7 +376,7 @@ class APWineSDK {
    * @returns - All FutureVault instances.
    */
   async fetchAllFutureVaults() {
-    return fetchAllFutureVaults(this.signer ?? this.provider, this.network)
+    return fetchAllFutureVaults(this.signerOrProvider, this.network)
   }
 
   /**
@@ -303,7 +394,7 @@ class APWineSDK {
     account?: string
   ) {
     return isApprovalNecessary(
-      this.signer ?? this.provider,
+      this.signerOrProvider,
       account ?? this.defaultUser,
       spender,
       tokenAddress,
@@ -318,7 +409,7 @@ class APWineSDK {
    */
   async fetchPT(amm: AMM) {
     const ptAddress = await amm.getPTAddress()
-    return PT__factory.connect(ptAddress, this.signer ?? this.provider)
+    return PT__factory.connect(ptAddress, this.signerOrProvider)
   }
 
   /**
@@ -326,7 +417,7 @@ class APWineSDK {
    * @returns - a collection of FYT token contract instances.
    */
   async fetchAllFYTs() {
-    return fetchFYTTokens(this.signer ?? this.provider, this.network)
+    return fetchFYTTokens(this.signerOrProvider, this.network)
   }
 
   /**
@@ -347,7 +438,14 @@ class APWineSDK {
    * @transaction -  requires a signer.
    */
   async approveLPForAll(amm: AMM, approval: boolean = true) {
-    return approveLPForAll(this.signer!, amm, approval)
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
+    return approveLPForAll(this.signer, amm, approval)
   }
 
   /**
@@ -358,12 +456,7 @@ class APWineSDK {
    * @returns - An aggregated construct with LPTokenPool related data.
    */
   async fetchLPTokenPool(amm: AMM, pairId: PairId, periodIndex?: number) {
-    return fetchLPTokenPool(
-      this.signer ?? this.provider,
-      amm,
-      pairId,
-      periodIndex
-    )
+    return fetchLPTokenPool(this.signerOrProvider, amm, pairId, periodIndex)
   }
 
   /**
@@ -372,7 +465,7 @@ class APWineSDK {
    * @returns - A collection of aggregated constructs with LPTokenPool related data.
    */
   async fetchAllLPTokenPools(amm: AMM) {
-    return fetchAllLPTokenPools(this.provider, amm)
+    return fetchAllLPTokenPools(this.signerOrProvider, amm)
   }
 
   /**
@@ -383,7 +476,14 @@ class APWineSDK {
    * @transaction -  requires a signer.
    */
   async addLiquidity(params: AddLiquidityParams, options?: Options) {
-    return addLiquidity({ signer: this.signer!, ...params }, options)
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
+    return addLiquidity({ signer: this.signer, ...params }, options)
   }
 
   /**
@@ -394,7 +494,14 @@ class APWineSDK {
    * @transaction -  requires a signer.
    */
   async removeLiquidity(params: RemoveLiquidityParams, options?: Options) {
-    return removeLiquidity({ signer: this.signer!, ...params }, options)
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
+    return removeLiquidity({ signer: this.signer, ...params }, options)
   }
 
   /**
@@ -412,11 +519,18 @@ class APWineSDK {
     amount: BigNumberish,
     options = { autoApprove: false }
   ) {
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
     if (options.autoApprove) {
       this.approve(spender, tokenAddress, amount)
     }
 
-    return updateAllowance(this.signer!, spender, tokenAddress, amount)
+    return updateAllowance(this.signer, spender, tokenAddress, amount)
   }
 
   /**
@@ -432,11 +546,18 @@ class APWineSDK {
     amount: BigNumberish,
     options = { autoApprove: false }
   ) {
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return withdraw(this.signer!, this.network, future, amount, this.Controller)
+    return withdraw(this.signer, this.network, future, amount, this.Controller)
   }
 
   /**
@@ -452,11 +573,18 @@ class APWineSDK {
     amount: BigNumberish,
     options = { autoApprove: false }
   ) {
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
     if (options.autoApprove && this.Controller) {
       await this.approve(this.Controller.address, future.address, amount)
     }
 
-    return deposit(this.signer!, this.network, future, amount, this.Controller)
+    return deposit(this.signer, this.network, future, amount, this.Controller)
   }
 
   /**
@@ -481,11 +609,18 @@ class APWineSDK {
     params: WithOptional<SwapParams, 'slippageTolerance'>,
     options: Options = { autoApprove: false }
   ) {
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
     return swap(
       'IN',
       {
         slippageTolerance: this.defaultSlippage,
-        signer: this.signer!,
+        signer: this.signer,
         network: this.network,
         ...params
       },
@@ -504,11 +639,18 @@ class APWineSDK {
     params: WithOptional<SwapParams, 'slippageTolerance'>,
     options: Options = { autoApprove: false }
   ) {
+    if (!this.signer) {
+      console.error(
+        'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
+      )
+      return
+    }
+
     return swap(
       'OUT',
       {
         slippageTolerance: this.defaultSlippage,
-        signer: this.signer!,
+        signer: this.signer,
         network: this.network,
         ...params
       },

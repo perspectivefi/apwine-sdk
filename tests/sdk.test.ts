@@ -94,7 +94,7 @@ describe('APWineSDK', () => {
         { autoApprove: true }
       )
 
-      await swap.transaction?.wait()
+      await swap?.transaction?.wait()
 
       const newBalance = await token.balanceOf(user)
 
@@ -115,7 +115,7 @@ describe('APWineSDK', () => {
         { from: 'PT', to: 'Underlying', amm, amount: parseUnits('10', 18) },
         { autoApprove: true }
       )
-      await swap.transaction?.wait()
+      await swap?.transaction?.wait()
 
       const newBalance = await token.balanceOf(user)
 
@@ -132,14 +132,15 @@ describe('APWineSDK', () => {
 
       const balance = await lp.token.balanceOf(user, lp.id)
 
-      const { transaction } = await sdk.addLiquidity(
-        {
-          amm,
-          pairId: 0,
-          amount: parseEther('0.1')
-        },
-        { autoApprove: true }
-      )
+      const { transaction } =
+        (await sdk.addLiquidity(
+          {
+            amm,
+            pairId: 0,
+            amount: parseEther('0.1')
+          },
+          { autoApprove: true }
+        )) ?? {}
 
       await transaction?.wait()
 
@@ -158,14 +159,15 @@ describe('APWineSDK', () => {
 
       const balance = await lp.token.balanceOf(user, lp.id)
 
-      const { transaction } = await sdk.removeLiquidity(
-        {
-          amm,
-          pairId: 0,
-          amount: parseEther('0.1')
-        },
-        { autoApprove: true }
-      )
+      const { transaction } =
+        (await sdk.removeLiquidity(
+          {
+            amm,
+            pairId: 0,
+            amount: parseEther('0.1')
+          },
+          { autoApprove: true }
+        )) ?? {}
 
       await transaction?.wait()
 
