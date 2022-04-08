@@ -53,7 +53,7 @@ describe('APWineSDK', () => {
       expect(sdk.signerOrProvider).toBe(sdk.provider)
     })
 
-    it.only('should set the signer or the provider to all contract instances, on change.', async () => {
+    it('should set the signer or the provider to all contract instances, on change.', async () => {
       await sdk.ready
 
       sdk.useProvider()
