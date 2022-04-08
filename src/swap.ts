@@ -1,4 +1,4 @@
-import { AMM, AMMRegistry__factory, AMMRouter__factory } from '@apwine/amm'
+import { AMM, AMMRegistry__factory, AMMRouterV1__factory } from '@apwine/amm'
 import {
   FutureVault,
   FutureYieldToken__factory,
@@ -158,7 +158,8 @@ export const swap = async (
       amountIn,
       amountOut,
       user,
-      deadline?.getTime() ?? Date.now() + MINUTE
+      deadline?.getTime() ?? Date.now() + MINUTE,
+      ethers.constants.AddressZero
     )
 
     return { transaction }
@@ -174,7 +175,7 @@ export const fetchSpotPrice = async (
   from: APWToken,
   to: APWToken
 ) => {
-  const router = AMMRouter__factory.connect(
+  const router = AMMRouterV1__factory.connect(
     getNetworkConfig(network).AMM_ROUTER,
     signerOrProvider
   )
