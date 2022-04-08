@@ -83,7 +83,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@apwine/amm": "^0.1.2",
+    "@apwine/amm": "^0.1.3",
     "@apwine/protocol": "^0.1.1",
     "@0xsequence/multicall": "^0.35.2",
     "@ethersproject/logger": "^5.5.0",

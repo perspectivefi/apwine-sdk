@@ -20,22 +20,32 @@ export const getRegistryContract = (
     signerOrProvider
   )
 
-export const getTokencontract = (signerOrProvider: Signer | Provider, tokenAddress: string) =>
-  AToken__factory.connect(tokenAddress, signerOrProvider)
+export const getTokenContract = (
+  signerOrProvider: Signer | Provider,
+  tokenAddress: string
+) => AToken__factory.connect(tokenAddress, signerOrProvider)
 
 export const getAMMRouterContract = (
   signerOrProvider: Signer | Provider,
   network: Network
 ) =>
-  AMMRouter__factory.connect(getNetworkConfig(network).AMM_ROUTER, signerOrProvider)
+  AMMRouter__factory.connect(
+    getNetworkConfig(network).AMM_ROUTER,
+    signerOrProvider
+  )
 
-export const getAMMRegistryContract = (signerOrProvider: Signer | Provider, network: Network) =>
-  AMMRegistry__factory.connect(getNetworkConfig(network).AMM_REGISTRY, signerOrProvider)
+export const getAMMRegistryContract = (
+  signerOrProvider: Signer | Provider,
+  network: Network
+) =>
+  AMMRegistry__factory.connect(
+    getNetworkConfig(network).AMM_REGISTRY,
+    signerOrProvider
+  )
 
 export const getControllerContract = async (
   signerOrProvider: Signer | Provider,
   network: Network
-
 ) => {
   const registry = getRegistryContract(signerOrProvider, network)
   const controllerAddress = await registry.getControllerAddress()

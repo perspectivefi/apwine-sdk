@@ -14,7 +14,7 @@ import {
   getControllerContract,
   getFutureVaultContract,
   getRegistryContract,
-  getTokencontract
+  getTokenContract
 } from './contracts'
 import {
   error,
@@ -184,7 +184,21 @@ export const approve = async (
     return error('NoSigner')
   }
 
-  const token = getTokencontract(signer, tokenAddress)
+  const account = await signer.getAddress()
+
+  const needsApproval = isApprovalNecessary(
+    signer,
+    account,
+    spender,
+    tokenAddress,
+    amount
+  )
+
+  if (!needsApproval) {
+    return { transaction: undefined }
+  }
+
+  const token = getTokenContract(signer, tokenAddress)
   const transaction = await token.approve(spender, amount)
 
   return { transaction }
@@ -197,7 +211,7 @@ export const fetchAllowance = async (
   spender: string,
   tokenAddress: string
 ) => {
-  const t = getTokencontract(signerOrProvider, tokenAddress)
+  const t = getTokenContract(signerOrProvider, tokenAddress)
   const allowance = await t.allowance(owner, spender)
   const decimals = await t.decimals()
   const token = new Token(getNetworkChainId(network), t.address, decimals)
@@ -215,7 +229,7 @@ export const updateAllowance = async (
     return error('NoSigner')
   }
 
-  const token = getTokencontract(signer, tokenAddress)
+  const token = getTokenContract(signer, tokenAddress)
   const bignumberAmount = BigNumber.from(amount)
 
   const transaction = await (bignumberAmount.isNegative()
@@ -240,6 +254,7 @@ export const deposit = async (
 
   const _controller =
     controller ?? (await getControllerContract(signer, network))
+
   const transaction = await _controller.deposit(future.address, amount)
 
   return { transaction }

@@ -138,7 +138,7 @@ class APWineSDK {
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
 
-    this.signerOrProvider = this.signer ?? this.provider
+    this.signerOrProvider = this.provider
 
     this.defaultSlippage = defaultSlippage
     this.network = network
@@ -246,11 +246,12 @@ class APWineSDK {
   /**
    * Updates the provider on an existing APWineSDK instance.
    * @param provider - A provider to connect to the ethereum blockchain.
+   * @param useWithContracts - 'Set this provider to sdk.signerOrProvider, and re-instantiate contract instances with it.'
    */
-  updateProvider(provider: Provider, use: boolean = false) {
+  updateProvider(provider: Provider, useWithContracts: boolean = false) {
     this.provider = provider
 
-    if (use) {
+    if (useWithContracts) {
       this.useProvider()
     }
   }
@@ -266,11 +267,12 @@ class APWineSDK {
   /**
    * Updates the signer on an existing APWineSDK instance.
    * @param signer - A transaction signer.
+   * @param useWithContracts - 'Set this signer to sdk.signerOrProvider, and re-instantiate contract instances with it.'
    */
-  updateSigner(signer: Signer, use: boolean = true) {
+  updateSigner(signer: Signer, useWithContracts: boolean = true) {
     this.signer = signer
 
-    if (use) {
+    if (useWithContracts) {
       this.useSigner()
     }
   }
@@ -541,20 +543,12 @@ class APWineSDK {
    * @returns - an SDK returnType which contains a transaction and/or an error.
    * @transaction -  requires a signer.
    */
-  async withdraw(
-    future: FutureVault,
-    amount: BigNumberish,
-    options = { autoApprove: false }
-  ) {
+  async withdraw(future: FutureVault, amount: BigNumberish) {
     if (!this.signer) {
       console.error(
         'Error: This is a transaction, you need to have a signer defined. Use sdk.updateSigner() to proceed.'
       )
       return
-    }
-
-    if (options.autoApprove && this.Controller) {
-      await this.approve(this.Controller.address, future.address, amount)
     }
 
     return withdraw(this.signer, this.network, future, amount, this.Controller)
@@ -581,7 +575,8 @@ class APWineSDK {
     }
 
     if (options.autoApprove && this.Controller) {
-      await this.approve(this.Controller.address, future.address, amount)
+      const ibtAddress = await future.getIBTAddress()
+      await this.approve(this.Controller.address, ibtAddress, amount)
     }
 
     return deposit(this.signer, this.network, future, amount, this.Controller)

@@ -4,7 +4,7 @@ import { BigNumber, ethers, providers, Signer } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
-import { getTokencontract } from '../src/contracts'
+import { getTokenContract } from '../src/contracts'
 import { isError } from '../src/utils/general'
 
 jest.setTimeout(30000)
@@ -114,7 +114,7 @@ describe('APWineSDK', () => {
       const [amm] = await sdk.fetchAllAMMs()
 
       const ptAddress = await amm.getPTAddress()
-      const token = await getTokencontract(sdk.provider, ptAddress)
+      const token = await getTokenContract(sdk.provider, ptAddress)
       const user = await signer.getAddress()
       const balance = await token.balanceOf(user)
       const swap = await sdk.swapIn(
@@ -135,7 +135,7 @@ describe('APWineSDK', () => {
       const [amm] = await sdk.fetchAllAMMs()
 
       const ptAddress = await amm.getPTAddress()
-      const token = await getTokencontract(sdk.provider, ptAddress)
+      const token = await getTokenContract(sdk.provider, ptAddress)
       const user = await signer.getAddress()
       const balance = await token.balanceOf(user)
 
