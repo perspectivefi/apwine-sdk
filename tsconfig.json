@@ -21,7 +21,14 @@
     "resolveJsonModule": true,
   },
   "typedocOptions": {
-    "entryPoints": ["src/index.ts", "src/constants.ts", "src/types.ts", "src/utils/index.ts"],
+    "entryPoints": [
+      "src/index.ts",
+      "src/constants.ts", 
+      "src/types.ts",
+      "src/utils/index.ts",
+      "src/amm.ts", 
+      "src/protocol.ts"
+    ],
     "out": "docs"
 },
   "include": ["src", "types", "./test", "/node_modules/@apwine", "global.d.ts"],

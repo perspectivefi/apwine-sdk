@@ -4,7 +4,7 @@ import { BigNumber, ethers, providers, Signer } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { parseEther, parseUnits } from 'ethers/lib/utils'
 import APWineSDK from '../src/sdk'
-import { getTokencontract } from '../src/contracts'
+import { getTokenContract } from '../src/contracts'
 import { isError } from '../src/utils/general'
 
 jest.setTimeout(30000)
@@ -41,6 +41,34 @@ describe('APWineSDK', () => {
         signer,
         network: 'mainnet'
       })
+    })
+
+    it('should keep track of the signer and provider', async () => {
+      await sdk.ready
+
+      sdk.useSigner()
+      expect(sdk.signerOrProvider).toBe(sdk.signer)
+
+      sdk.useProvider()
+      expect(sdk.signerOrProvider).toBe(sdk.provider)
+    })
+
+    it('should set the signer or the provider to all contract instances, on change.', async () => {
+      await sdk.ready
+
+      sdk.useProvider()
+
+      expect(sdk.AMMRegistry.signer).toBeNull()
+      expect(sdk.Registry.signer).toBeNull()
+      expect(sdk.Controller?.signer).toBeNull()
+      expect(sdk.Router.signer).toBeNull()
+
+      sdk.useSigner()
+
+      expect(sdk.AMMRegistry.signer).toBe(sdk.signer)
+      expect(sdk.Registry.signer).toBe(sdk.signer)
+      expect(sdk.Controller?.signer).toBe(sdk.signer)
+      expect(sdk.Router.signer).toBe(sdk.signer)
     })
 
     it('should have the network set', async () => {
@@ -86,7 +114,7 @@ describe('APWineSDK', () => {
       const [amm] = await sdk.fetchAllAMMs()
 
       const ptAddress = await amm.getPTAddress()
-      const token = await getTokencontract(sdk.provider, ptAddress)
+      const token = await getTokenContract(sdk.provider, ptAddress)
       const user = await signer.getAddress()
       const balance = await token.balanceOf(user)
       const swap = await sdk.swapIn(
@@ -94,7 +122,7 @@ describe('APWineSDK', () => {
         { autoApprove: true }
       )
 
-      await swap.transaction?.wait()
+      await swap?.transaction?.wait()
 
       const newBalance = await token.balanceOf(user)
 
@@ -107,7 +135,7 @@ describe('APWineSDK', () => {
       const [amm] = await sdk.fetchAllAMMs()
 
       const ptAddress = await amm.getPTAddress()
-      const token = await getTokencontract(sdk.provider, ptAddress)
+      const token = await getTokenContract(sdk.provider, ptAddress)
       const user = await signer.getAddress()
       const balance = await token.balanceOf(user)
 
@@ -115,7 +143,7 @@ describe('APWineSDK', () => {
         { from: 'PT', to: 'Underlying', amm, amount: parseUnits('10', 18) },
         { autoApprove: true }
       )
-      await swap.transaction?.wait()
+      await swap?.transaction?.wait()
 
       const newBalance = await token.balanceOf(user)
 
@@ -132,14 +160,15 @@ describe('APWineSDK', () => {
 
       const balance = await lp.token.balanceOf(user, lp.id)
 
-      const { transaction } = await sdk.addLiquidity(
-        {
-          amm,
-          pairId: 0,
-          amount: parseEther('0.1')
-        },
-        { autoApprove: true }
-      )
+      const { transaction } =
+        (await sdk.addLiquidity(
+          {
+            amm,
+            pairId: 0,
+            amount: parseEther('0.1')
+          },
+          { autoApprove: true }
+        )) ?? {}
 
       await transaction?.wait()
 
@@ -158,14 +187,15 @@ describe('APWineSDK', () => {
 
       const balance = await lp.token.balanceOf(user, lp.id)
 
-      const { transaction } = await sdk.removeLiquidity(
-        {
-          amm,
-          pairId: 0,
-          amount: parseEther('0.1')
-        },
-        { autoApprove: true }
-      )
+      const { transaction } =
+        (await sdk.removeLiquidity(
+          {
+            amm,
+            pairId: 0,
+            amount: parseEther('0.1')
+          },
+          { autoApprove: true }
+        )) ?? {}
 
       await transaction?.wait()
 
