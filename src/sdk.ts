@@ -1,6 +1,5 @@
-import { BigNumberish, Signer } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 import { providers } from '@0xsequence/multicall'
+import { AMM, AMMRegistry, AMMRouterV1 } from '@apwine/amm'
 import {
   Controller,
   Controller__factory,
@@ -9,34 +8,29 @@ import {
   PT__factory,
   Registry
 } from '@apwine/protocol'
-import { AMM, AMMRegistry, AMMRouter, AMMRouterV1 } from '@apwine/amm'
+import { Provider } from '@ethersproject/providers'
+import { BigNumberish, Signer } from 'ethers'
 import {
-  Network,
-  PairId,
-  Options,
-  AddLiquidityParams,
-  RemoveLiquidityParams,
-  WithOptional,
-  SwapParams,
-  SDKProps,
-  SDKOptions,
-  APWToken
-} from './types'
-
+  getAMMRegistryContract,
+  getAMMRouterContract,
+  getControllerContract,
+  getRegistryContract
+} from './contracts'
 import {
+  approve,
   deposit,
+  fetchAllAMMs,
   fetchAllFutureAggregates,
   fetchAllFutureVaults,
-  fetchFutureAggregateFromIndex,
-  fetchFutureAggregateFromAddress,
-  withdraw,
-  updateAllowance,
-  approve,
   fetchAllowance,
+  fetchAMM,
+  fetchFutureAggregateFromAddress,
+  fetchFutureAggregateFromIndex,
   isApprovalNecessary,
-  fetchAllAMMs,
-  fetchAMM
+  updateAllowance,
+  withdraw
 } from './futures'
+import { fetchFYTTokens } from './fyt'
 import {
   addLiquidity,
   approveLPForAll,
@@ -45,15 +39,19 @@ import {
   isLPApprovedForAll,
   removeLiquidity
 } from './lp'
-import {
-  getAMMRegistryContract,
-  getAMMRouterContract,
-  getControllerContract,
-  getRegistryContract
-} from './contracts'
-
 import { fetchSpotPrice, swap } from './swap'
-import { fetchFYTTokens } from './fyt'
+import {
+  AddLiquidityParams,
+  APWToken,
+  Network,
+  Options,
+  PairId,
+  RemoveLiquidityParams,
+  SDKOptions,
+  SDKProps,
+  SwapParams,
+  WithOptional
+} from './types'
 
 class APWineSDK {
   /**
@@ -138,7 +136,7 @@ class APWineSDK {
     this.provider = new providers.MulticallProvider(provider)
     this.signer = signer
 
-    this.signerOrProvider = this.provider
+    this.signerOrProvider = this.signer ?? this.provider
 
     this.defaultSlippage = defaultSlippage
     this.network = network
